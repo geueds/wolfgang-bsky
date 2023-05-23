@@ -1,0 +1,20 @@
+{
+  "name": "wolfgang-bsky",
+  "version": "1.0.0",
+  "description": "wolfgang the cat bot",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "type": "module",
+  "license": "ISC",
+  "dependencies": {
+    "@atproto/api": "^0.3.7",
+    "@atproto/repo": "^0.1.0",
+    "@atproto/xrpc-server": "^0.2.0",
+    "dotenv": "^16.0.3"
+  }
+}
