@@ -8,7 +8,7 @@ import pkg from "@atproto/api";
 dotenv.config();
 
 const { BskyAgent } = bsky;
-const { AtUri, RichText } = pkg;
+const { AtUri, RichText, AppBskyFeedPost } = pkg;
 
 const agent = new BskyAgent({
   service: 'https://bsky.social',
@@ -66,6 +66,37 @@ const stream = async () => {
       }
 
       ops.forEach((op) => {
+        if (op.repo === 'did:plc:y4rd5hesgwwbkblvkkidfs73') {
+          if (op.record.text.toLowerCase().includes('test')) {
+            const rt = new RichText({text: '3.1\t14.5\t0.005\n0.02\t1.23\t1'})
+            rt.detectFacets(agent)
+            const postRecord = {
+                $type: 'app.bsky.feed.post',
+                text: rt.text,
+                facets: rt.facets,
+                createdAt: new Date().toISOString(),
+                reply: {
+                  parent: { 
+                    cid: op.cid, 
+                    uri: op.uri 
+                  },
+                  root: { 
+                    cid: op.reply?.root? op.reply.root.cid : op.cid, 
+                    uri: op.reply?.root? op.reply.root.uri : op.uri
+                  }
+                }
+            }
+            console.log("Posting in test reply to: ", op.repo)
+            if (AppBskyFeedPost.isRecord(postRecord)) {
+              const res = AppBskyFeedPost.validateRecord(postRecord)
+              if (res.success) {
+                agent.post(postRecord)
+              } else {
+                console.log(res.error)
+              }
+            }
+          }
+        }
         if (BLESSED_USERS.includes(op.repo)) {
           if (op.record.text.toLowerCase().includes('te amo')) {
             const rt = new RichText({text: '❤️'})
@@ -99,7 +130,14 @@ const stream = async () => {
                     }
                 }
                 console.log("Posting in reply to: ", op.repo)
-                agent.post(postRecord)
+                if (AppBskyFeedPost.isRecord(postRecord)) {
+                  const res = AppBskyFeedPost.validateRecord(postRecord)
+                  if (res.success) {
+                    agent.post(postRecord)
+                  } else {
+                    console.log(res.error)
+                  }
+                }
               }
             })
           } 
