@@ -4,14 +4,14 @@ import Wolfgang from './server'
 const run = async () => {
   dotenv.config()
   const server = Wolfgang.create({
-    bskyIdentifier: maybeStr(process.env.FEEDGEN_BSKY_IDENTIFIER) ?? '',
-    bskyPassword: maybeStr(process.env.FEEDGEN_BSKY_PASSWORD) ?? '',
-    mysqlDatabase: maybeStr(process.env.FEEDGEN_MYSQL_DATABASE) ?? 'bsky',
-    mysqlHost: maybeStr(process.env.FEEDGEN_MYSQL_HOST) ?? 'localhost',
-    mysqlUser: maybeStr(process.env.FEEDGEN_MYSQL_USER) ?? '',
-    mysqlPassword: maybeStr(process.env.FEEDGEN_MYSQL_PASSWORD) ?? '',
+    bskyIdentifier: maybeStr(process.env.WOLFGANG_BSKY_IDENTIFIER) ?? '',
+    bskyPassword: maybeStr(process.env.WOLFGANG_BSKY_PASSWORD) ?? '',
+    mysqlDatabase: maybeStr(process.env.WOLFGANG_MYSQL_DATABASE) ?? 'bsky',
+    mysqlHost: maybeStr(process.env.WOLFGANG_MYSQL_HOST) ?? 'localhost',
+    mysqlUser: maybeStr(process.env.WOLFGANG_MYSQL_USER) ?? '',
+    mysqlPassword: maybeStr(process.env.WOLFGANG_MYSQL_PASSWORD) ?? '',
     subscriptionEndpoint:
-      maybeStr(process.env.FEEDGEN_SUBSCRIPTION_ENDPOINT) ??
+      maybeStr(process.env.WOLFGANG_SUBSCRIPTION_ENDPOINT) ??
       'wss://bsky.social',
   })
   await server.start()

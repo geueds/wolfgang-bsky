@@ -12,15 +12,14 @@ import {
   OutputSchema as RepoEvent,
   isCommit,
 } from '../lexicon/types/com/atproto/sync/subscribeRepos'
-import { Database } from '../db'
-import { BskyAgent } from "@atproto/api";
+import { AppContext } from '../config'
 
 export abstract class FirehoseSubscriptionBase {
   public sub: Subscription<RepoEvent>
 
-  constructor(public db: Database, public service: string, public api: BskyAgent) {
+  constructor(public ctx: AppContext) {
     this.sub = new Subscription({
-      service: service,
+      service: ctx.cfg.subscriptionEndpoint,
       method: ids.ComAtprotoSyncSubscribeRepos,
       getParams: () => this.getCursor(),
       validate: (value: unknown) => {
@@ -53,18 +52,18 @@ export abstract class FirehoseSubscriptionBase {
   }
 
   async updateCursor(cursor: number) {
-    await this.db
+    await this.ctx.db
       .updateTable('wolfgang_sub_state')
       .set({ cursor })
-      .where('service', '=', this.service)
+      .where('service', '=', this.ctx.cfg.subscriptionEndpoint)
       .execute()
   }
 
   async getCursor(): Promise<{ cursor?: number }> {
-    const res = await this.db
+    const res = await this.ctx.db
       .selectFrom('wolfgang_sub_state')
       .selectAll()
-      .where('service', '=', this.service)
+      .where('service', '=', this.ctx.cfg.subscriptionEndpoint)
       .executeTakeFirst()
     return res ? { cursor: res.cursor } : {}
   }

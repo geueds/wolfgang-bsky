@@ -24,12 +24,12 @@ export class Wolfgang {
   static create(cfg: Config) {
     const db = createDb(cfg.mysqlDatabase, cfg.mysqlHost, cfg.mysqlUser, cfg.mysqlPassword)
     const api = new BskyAgent({service: 'https://bsky.social'})
-    const firehose = new FirehoseSubscription(db, cfg.subscriptionEndpoint, api)
     const ctx: AppContext = {
       db,
       cfg,
       api,
     }
+    const firehose = new FirehoseSubscription(ctx)
     return new Wolfgang(db, firehose, cfg, api)
   }
 
