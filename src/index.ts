@@ -3,7 +3,7 @@ import Wolfgang from './server'
 
 const run = async () => {
   dotenv.config()
-  const server = Wolfgang.create({
+  const server = await Wolfgang.create({
     bskyIdentifier: maybeStr(process.env.WOLFGANG_BSKY_IDENTIFIER) ?? '',
     bskyPassword: maybeStr(process.env.WOLFGANG_BSKY_PASSWORD) ?? '',
     mysqlDatabase: maybeStr(process.env.WOLFGANG_MYSQL_DATABASE) ?? 'bsky',

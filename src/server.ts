@@ -21,13 +21,23 @@ export class Wolfgang {
     this.api = api
   }
 
-  static create(cfg: Config) {
+  static async create(cfg: Config) {
     const db = createDb(cfg.mysqlDatabase, cfg.mysqlHost, cfg.mysqlUser, cfg.mysqlPassword)
     const api = new BskyAgent({service: 'https://bsky.social'})
+
+    const followers = await db
+    .selectFrom('follows')
+    .select(['uri', 'author'])
+    .where('subject', '=', cfg.bskyIdentifier)
+    .execute()
+    const lastUpdated = new Date().toISOString()
+
     const ctx: AppContext = {
       db,
       cfg,
       api,
+      lastUpdated,
+      followers,
     }
     const firehose = new FirehoseSubscription(ctx)
     return new Wolfgang(db, firehose, cfg, api)
