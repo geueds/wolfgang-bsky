@@ -96,7 +96,7 @@ export default function (ctx: AppContext) {
             textVal = ''
             const timeCutoff = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString()
             
-            syncBlocks(ctx, user.did)
+            // syncBlocks(ctx, user.did)
 
             interactions.withOthers = await ctx.db
             .with('commentsTable', (db) => db
