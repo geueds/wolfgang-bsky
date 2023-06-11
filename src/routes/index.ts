@@ -24,12 +24,13 @@ export default function (ctx: AppContext) {
     if (handle && handle.length > 0) {
       const user = await ctx.db
       .selectFrom('profiles')
-      .select('did')
+      .select(['did', 'handle'])
       .where('handle', '=', handle)
       .limit(1)
       .executeTakeFirst()
 
       if (!!user) {
+        console.log(`Searching blocks of ${user.did}: @${user.handle}`)
         userFound = true
         textVal = ''
 
