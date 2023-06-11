@@ -7,6 +7,67 @@ const maybeStr = (val?: string | any) => {
   return val
 }
 
+async function getAllRecords(ctx: AppContext, repo: string, collection: string) {
+  let cursor : any = ''
+  let currit : number = 0
+  let list : any[] = [];
+  do {
+    currit++
+    const response = await ctx.api.com.atproto.repo.listRecords({
+      repo: repo,
+      collection: collection,
+      limit: 100,
+      cursor: cursor
+    })
+    if (response.success && response.data?.records?.length > 0) {
+      list = list.concat(response.data.records)
+      if (response.data.records.length < 100) {
+        cursor = null
+      } else {
+        cursor = response.data.cursor
+      }
+    } else {
+      cursor = null
+    }
+  } while (cursor !== null && currit < 5)
+  return list
+}
+
+async function syncBlocks (ctx: AppContext, repo: string) {
+  const actualBlocks = await getAllRecords(ctx, repo, 'app.bsky.graph.block')
+  const currentBlocks = await ctx.db
+  .selectFrom('blocks')
+  .select('uri')
+  .where('author', '=', repo)
+  .execute()
+
+  const blocksToDelete = currentBlocks.filter(x => !actualBlocks.map(b => b.uri).includes(x.uri))
+  const blocksToAdd = actualBlocks.filter(x => !currentBlocks.map(b => b.uri).includes(x.uri))
+
+  if (blocksToDelete.length > 0) {
+    await ctx.db
+    .deleteFrom('blocks')
+    .where('uri', 'in', blocksToDelete.map(b => b.uri))
+    .execute()
+  }
+
+  if (blocksToAdd.length > 0) {
+    await ctx.db
+    .insertInto('blocks')
+    .ignore()
+    .values(blocksToAdd.map((block) => {
+      return {
+        uri: block.uri,
+        cid: block.cid,
+        author: repo,
+        subject: block.value.subject,
+        indexedAt: block.value.createdAt,
+      }
+    }))
+    .execute()
+  }
+}
+
 export default function (ctx: AppContext) {
   const router = express.Router()
 
@@ -34,6 +95,8 @@ export default function (ctx: AppContext) {
             userFound = true
             textVal = ''
             const timeCutoff = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString()
+            
+            syncBlocks(ctx, user.did)
 
             interactions.withOthers = await ctx.db
             .with('commentsTable', (db) => db
@@ -208,6 +271,8 @@ export default function (ctx: AppContext) {
         console.log(`Searching blocks of ${user.did}: @${user.handle}`)
         userFound = true
         textVal = ''
+
+        syncBlocks(ctx, user.did)
 
         blocks = await ctx.db
         .selectFrom('blocks')
