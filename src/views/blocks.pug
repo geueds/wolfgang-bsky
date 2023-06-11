@@ -1,33 +1,27 @@
-doctype html
-head
-    link(href="https://fonts.googleapis.com/css?family=Open Sans" rel="stylesheet")
-    style
-        include style.css
-html(lang='en')
-    body
-        form(id="form" action="/blocks" method="get")
-            input(id="handle" type="text" name="handle" value='' placeholder="User")
-            input(id="button" type="submit" value="Search")
+include layout.pug
+    form(id="form" action="/blocks" method="get")
+        input(id="handle" type="text" name="handle" value='' placeholder="User")
+        input(id="button" type="submit" value="Search")
 
-            p Not all blocks are shown, only the latest for now.
+        p Not all blocks are shown, only the latest for now.
 
-        if !userFound
-            p= textVal
+    if !userFound
+        p= textVal
 
-        if userFound
-            if blocks.length > 0
-                p= `@${handle} blocked by:`
-                table
-                    thead
-                        tr 
-                            th(width='20px') #
-                            th User 
-                            th Display name
-                            th Date
-                    tbody
-                        each val, idx in blocks
-                            tr
-                                td= idx+1
-                                td: a(href='https://bsky.app/profile/'+val.did) #{(val.handle.length > 0) ? `@${val.handle}` : val.did}
-                                td= val.displayName
-                                td(style='text-align:center')= val.indexedAt
+    if userFound
+        if blocks.length > 0
+            p= `@${handle} blocked by:`
+            table
+                thead
+                    tr 
+                        th(width='20px') #
+                        th User 
+                        th Display name
+                        th Date
+                tbody
+                    each val, idx in blocks
+                        tr
+                            td= idx+1
+                            td: a(href='https://bsky.app/profile/'+val.did) #{(val.handle.length > 0) ? `@${val.handle}` : val.did}
+                            td= val.displayName
+                            td(style='text-align:center')= val.indexedAt
