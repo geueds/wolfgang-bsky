@@ -3,7 +3,10 @@ import Wolfgang from './server'
 
 const run = async () => {
   dotenv.config()
+  const hostname = maybeStr(process.env.WOLFGANG_HOSTNAME) ?? 'example.com'
   const server = await Wolfgang.create({
+    port: maybeInt(process.env.WOLFGANG_PORT) ?? 3000,
+    listenhost: maybeStr(process.env.WOLFGANG_LISTENHOST) ?? 'localhost',
     bskyIdentifier: maybeStr(process.env.WOLFGANG_BSKY_IDENTIFIER) ?? '',
     bskyPassword: maybeStr(process.env.WOLFGANG_BSKY_PASSWORD) ?? '',
     mysqlDatabase: maybeStr(process.env.WOLFGANG_MYSQL_DATABASE) ?? 'bsky',
@@ -13,10 +16,11 @@ const run = async () => {
     subscriptionEndpoint:
       maybeStr(process.env.WOLFGANG_SUBSCRIPTION_ENDPOINT) ??
       'wss://bsky.social',
+    hostname,
   })
   await server.start()
   console.log(
-    `running Wolfgang app`,
+    `running Wolfgang at http://${server.cfg.listenhost}:${server.cfg.port}`,
   )
 }
 

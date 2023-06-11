@@ -10,6 +10,9 @@ export type AppContext = {
 }
 
 export type Config = {
+  port: number
+  listenhost: string
+  hostname: string
   bskyIdentifier: string
   bskyPassword: string
   mysqlDatabase: string

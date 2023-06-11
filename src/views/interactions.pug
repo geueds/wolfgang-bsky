@@ -1,0 +1,60 @@
+doctype html
+html(lang='en')
+    body
+    form(id="form" action="/interactions" method="get")
+        input(id="handle" type="text" name="handle" value='' placeholder="User")
+        input(id="button" type="submit" value="Search")
+
+    if !userFound
+        p= textVal
+
+    if userFound
+        p Nas últimas 24 horas...
+
+        if interactions.withOthers.length > 0
+            p= `@${handle} interagiu com:`
+            table(border=1)
+                tr 
+                    th #
+                    th User 
+                    th Display name
+                    th(width='50px') # of characters
+                    th(width='50px') # of comments
+                    th(width='50px') # of quotes
+                    th(width='50px') # of likes
+                    th Total
+
+                each val, idx in interactions.withOthers
+                    tr
+                        td= idx+1
+                        td: a(href='https://bsky.app/profile/'+val.did) #{(val.handle.length > 0) ? `@${val.handle}` : val.subject}
+                        td= val.displayName
+                        td(style='text-align:center')= val.totalTextLength
+                        td(style='text-align:center')= val.commentsCount
+                        td(style='text-align:center')= val.quotesCount
+                        td(style='text-align:center')= val.likesCount
+                        td(style='text-align:center')= val.totalCount
+
+        if interactions.withMe.length > 0
+            p= `Interagiram com @${handle}:`
+            table(border=1)
+                tr 
+                    th #
+                    th User 
+                    th Display name
+                    th(width='50px') # of characters
+                    th(width='50px') # of comments
+                    th(width='50px') # of quotes
+                    th(width='50px') # of likes
+                    th Total
+
+                each val, idx in interactions.withMe
+                    tr
+                        td= idx+1
+                        td: a(href='https://bsky.app/profile/'+val.did) #{(val.handle.length > 0) ? `@${val.handle}` : val.subject}
+                        td= val.displayName
+                        td(style='text-align:center')= val.totalTextLength
+                        td(style='text-align:center')= val.commentsCount
+                        td(style='text-align:center')= val.quotesCount
+                        td(style='text-align:center')= val.likesCount
+                        td(style='text-align:center')= val.totalCount

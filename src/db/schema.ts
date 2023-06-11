@@ -24,9 +24,13 @@ export type Post = {
   author: string
   replyParent: string | null
   replyRoot: string | null
+  quoteUri: string | null
   keywords: string | null
   hasImages: number
   textLength: number | null
+  comments: number | null
+  reposts: number | null
+  likes: number | null
   indexedAt: string
 }
 

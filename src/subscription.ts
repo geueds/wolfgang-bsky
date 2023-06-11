@@ -3,6 +3,7 @@ import {
   isCommit,
 } from './lexicon/types/com/atproto/sync/subscribeRepos'
 import { FirehoseSubscriptionBase, getOpsByType } from './util/subscription'
+import { AppBskyEmbedRecord } from '@atproto/api'
 
 export class FirehoseSubscription extends FirehoseSubscriptionBase {
   async handleEvent(evt: RepoEvent) {
@@ -27,6 +28,9 @@ export class FirehoseSubscription extends FirehoseSubscriptionBase {
     }
 
     const postsToCreate = ops.posts.creates.map((create) => {
+      if (create.author === this.ctx.cfg.bskyIdentifier) {
+        console.log(create)
+      }
       return {
         uri: create.uri,
         cid: create.cid,
@@ -38,6 +42,8 @@ export class FirehoseSubscription extends FirehoseSubscriptionBase {
     })
 
     if (postsToCreate.length > 0) {
+
+
       
     }
   }
