@@ -10,7 +10,6 @@ import path from 'path'
 import cors from 'cors'
 import indexRoute from './routes/index'
 import feedsRoute from './routes/feeds'
-import interactionsRoute from './routes/interactions'
 
 export class Wolfgang {
   public app: express.Application
@@ -72,7 +71,6 @@ export class Wolfgang {
 
     app.use(indexRoute(ctx))
     app.use(feedsRoute(ctx))
-    app.use(interactionsRoute(ctx))
 
     return new Wolfgang(app, db, firehose, cfg, api)
   }
