@@ -52,13 +52,13 @@ export default function (ctx: AppContext) {
                 ])
                 .groupBy('did')
             )
-            // .with('repostsTable', (db) => db
-            //     .selectFrom('reposts')
-            //     .where('uri', 'like', `at://${user.did}%`)
-            //     .where('indexedAt', '>', timeCutoff)
-            //     .select([sql`SUBSTR(reposts.subjectUri, 6, 32)`.as('did'), sql`count(*)`.as('repostsCount')])
-            //     .groupBy('did')
-            // )
+            .with('repostsTable', (db) => db
+                .selectFrom('reposts')
+                .where('uri', 'like', `at://${user.did}%`)
+                .where('indexedAt', '>', timeCutoff)
+                .select([sql`SUBSTR(reposts.subjectUri, 6, 32)`.as('did'), sql`count(*)`.as('repostsCount')])
+                .groupBy('did')
+            )
             .with('likesTable', (db) => db
                 .selectFrom('likes')
                 .where('uri', 'like', `at://${user.did}%`)
@@ -72,7 +72,7 @@ export default function (ctx: AppContext) {
             .selectFrom('profiles')
             .leftJoin('commentsTable', 'commentsTable.did', 'profiles.did')
             .leftJoin('quotesTable', 'quotesTable.did', 'profiles.did')
-            // .leftJoin('repostsTable', 'repostsTable.did', 'profiles.did')
+            .leftJoin('repostsTable', 'repostsTable.did', 'profiles.did')
             .leftJoin('likesTable', 'likesTable.did', 'profiles.did')
             .select([
                 'profiles.did',
@@ -80,24 +80,24 @@ export default function (ctx: AppContext) {
                 'displayName',
                 'commentsCount',
                 'quotesCount',
-                // 'repostsCount',
+                'repostsCount',
                 'likesCount',
                 'totalTextLength',
-                sql`(COALESCE(commentsCount, 0) + COALESCE(quotesCount, 0) + COALESCE(likesCount, 0))`.as('totalCount'),
+                sql`(COALESCE(commentsCount, 0) + COALESCE(quotesCount, 0) + COALESCE(repostsCount, 0) + COALESCE(likesCount, 0))`.as('totalCount'),
             ])
             .where('profiles.did', '!=', user.did)
             .groupBy([
                 'profiles.did',
                 'commentsCount',
                 'quotesCount',
-                // 'repostsCount',
+                'repostsCount',
                 'likesCount'
             ])
             .orderBy('totalCount', 'desc')
             .having(({or, cmpr}) => or([
                 cmpr('commentsCount', '>', 0),
                 cmpr('quotesCount', '>', 0),
-                // cmpr('repostsCount', '>', 0),
+                cmpr('repostsCount', '>', 0),
                 cmpr('likesCount', '>', 0),
             ]))
             .limit(20)
@@ -125,13 +125,13 @@ export default function (ctx: AppContext) {
                 ])
                 .groupBy('did')
             )
-            // .with('repostsTable', (db) => db
-            //     .selectFrom('reposts')
-            //     .where('subjectUri', 'like', `at://${user.did}%`)
-            //     .where('indexedAt', '>', timeCutoff)
-            //     .select([sql`SUBSTR(reposts.uri, 6, 32)`.as('did'), sql`count(*)`.as('repostsCount')])
-            //     .groupBy('did')
-            // )
+            .with('repostsTable', (db) => db
+                .selectFrom('reposts')
+                .where('subjectUri', 'like', `at://${user.did}%`)
+                .where('indexedAt', '>', timeCutoff)
+                .select([sql`SUBSTR(reposts.uri, 6, 32)`.as('did'), sql`count(*)`.as('repostsCount')])
+                .groupBy('did')
+            )
             .with('likesTable', (db) => db
                 .selectFrom('likes')
                 .where('subjectUri', 'like', `at://${user.did}%`)
@@ -145,7 +145,7 @@ export default function (ctx: AppContext) {
             .selectFrom('profiles')
             .leftJoin('commentsTable', 'commentsTable.did', 'profiles.did')
             .leftJoin('quotesTable', 'quotesTable.did', 'profiles.did')
-            // .leftJoin('repostsTable', 'repostsTable.did', 'profiles.did')
+            .leftJoin('repostsTable', 'repostsTable.did', 'profiles.did')
             .leftJoin('likesTable', 'likesTable.did', 'profiles.did')
             .select([
                 'profiles.did',
@@ -153,24 +153,24 @@ export default function (ctx: AppContext) {
                 'displayName', 
                 'commentsCount',
                 'quotesCount',
-                // 'repostsCount',
+                'repostsCount',
                 'likesCount',
                 'totalTextLength',
-                sql`(COALESCE(commentsCount, 0) + COALESCE(quotesCount, 0) + COALESCE(likesCount, 0))`.as('totalCount'),
+                sql`(COALESCE(commentsCount, 0) + COALESCE(quotesCount, 0) + COALESCE(repostsCount, 0) + COALESCE(likesCount, 0))`.as('totalCount'),
             ])
             .where('profiles.did', '!=', user.did)
             .groupBy([
                 'profiles.did',
                 'commentsCount',
                 'quotesCount',
-                // 'repostsCount',
+                'repostsCount',
                 'likesCount'
             ])
             .orderBy('totalCount', 'desc')
             .having(({or, cmpr}) => or([
                 cmpr('commentsCount', '>', 0),
                 cmpr('quotesCount', '>', 0),
-                // cmpr('repostsCount', '>', 0),
+                cmpr('repostsCount', '>', 0),
                 cmpr('likesCount', '>', 0),
             ]))
             .limit(20)
