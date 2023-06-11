@@ -31,7 +31,7 @@ export default function (ctx: AppContext) {
     .select(sql`min(indexedAt)`.as('value'))
     .executeTakeFirst()
 
-    return res.render('blocks', { query:query, since: since?.value });
+    return res.render('db_blocks', { query:query, since: since?.value });
   })
 
   router.get('/db/follows', async (req, res) => {
@@ -56,7 +56,7 @@ export default function (ctx: AppContext) {
     .select(sql`min(indexedAt)`.as('value'))
     .executeTakeFirst()
 
-    return res.render('follows', { query:query, since: since?.value });
+    return res.render('db_follows', { query:query, since: since?.value });
   })
 
   return router
