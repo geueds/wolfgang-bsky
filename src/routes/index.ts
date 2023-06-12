@@ -305,25 +305,6 @@ export default function (ctx: AppContext) {
   
         const defaultAvatarUrl = 'src/routes/person-fill.svg';
 
-        if (!users[i].avatar) {
-          const profile = await ctx.api
-          .getProfile({ actor: users[i].did })
-          if (profile?.data) {
-            await ctx.db
-            .updateTable('profiles')
-            .set({
-              handle: profile.data.handle,
-              displayName: profile.data.displayName,
-              avatar: profile.data.avatar ?? null,
-              description: profile.data.description,
-              updatedAt: new Date().toISOString(),
-            })
-            .where('did', '=', users[i].did)
-            .execute()
-            users[i].avatar = profile.data.avatar ?? null
-          }
-        }
-
         const img = await loadImage(users[i].avatar || defaultAvatarUrl);
         if (users[i].avatar) {
           cctx.drawImage(
