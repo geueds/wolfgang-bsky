@@ -13,6 +13,7 @@ export type Profile = {
   did: string
   handle: string | null
   displayName: string | null
+  avatar: string | null
   description: string | null
   indexedAt: string
   updatedAt: string | null
