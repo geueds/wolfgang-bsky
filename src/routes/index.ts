@@ -104,6 +104,8 @@ const getInteractions = async (ctx: AppContext, handle: string, limit: number, t
       .limit(limit)
       .execute()
 
+      console.log(`done 1: ${user.did}`)
+
       const withMe = await ctx.db
       .with('commentsTable', (db) => db
           .selectFrom('posts')
@@ -182,6 +184,8 @@ const getInteractions = async (ctx: AppContext, handle: string, limit: number, t
       .limit(limit)
       .execute()
 
+      console.log(`done 2: ${user.did}`)
+
       const mergedTables = [
         ...withMe.filter(v => !(withOthers.find(sp => sp.did === v.did))).map(v => ({
             ...v,
@@ -228,6 +232,8 @@ const getInteractions = async (ctx: AppContext, handle: string, limit: number, t
       .sort((a, b) => (a.total > b.total) ? -1 : 1)
       .slice(0, limit)
 
+      console.log(`done 3: ${user.did}`)
+
       return {user: user, withMe: withMe, withOthers: withOthers, merged: mergedTables}
   }
   return undefined
@@ -248,8 +254,8 @@ export default function (ctx: AppContext) {
 
   router.post('/interactions', async (req, res) => {
     const handle = maybeStr(req.body.handle)?.replace(/^@/g, '').trim()
-    const timeCutoff = new Date(Date.now() - 2 * 24 * 3600 * 1000).toISOString()
-    const interactions = await getInteractions(ctx, handle, 20, timeCutoff)
+    const timeCutoff = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString()
+    const interactions = await getInteractions(ctx, handle, 25, timeCutoff)
 
     if (!!interactions) {
       return res.render('interactions', { handle: handle, interactions: interactions });
@@ -333,6 +339,8 @@ export default function (ctx: AppContext) {
         cctx.restore();
       }
     }
+
+    console.log(`done 4: ${handle}`)
 
     res.writeHead(200, {
         "Content-Type": "image/png",
