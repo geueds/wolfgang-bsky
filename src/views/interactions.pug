@@ -62,25 +62,12 @@ mixin interactionTable(list)
                     td= val.total
 
 include layout.pug
-    form(id="form" action="/interactions" method="get")
+    form(id="form" action="/interactions" method="post")
         input(id="handle" type="text" name="handle" value='' placeholder="User")
         input(id="button" type="submit" value="Search")
-
-    p= textVal
-
-    if userFound && interactions.length > 0
-        +interactionTable(interactions)
-
-                //- <Grid container alignItems="center">
-                //-   <Grid sx={{ display: 'flex', width: 44 }}>
-                //-     <Avatar sx={{ width: 25, height: 25 }} style={{ display: 'inline-block' }} src={option.avatar} />
-                //-   </Grid>
-                //-   <Grid sx={{ width: 'calc(100% - 44px)', wordWrap: 'break-word' }}>
-                //-     <Typography variant="body2">
-                //-       {option.displayName}
-                //-       </Typography>
-                //-     <Typography variant="caption" color="text.secondary">
-                //-       @{option.handle}
-                //-     </Typography>
-                //-   </Grid>
-                //- </Grid>
+        input(id="button" type="submit" formaction="/circles" value="Circles")
+    
+    if !!interactions && !!interactions.merged
+        +interactionTable(interactions.merged)
+    else if errorText 
+        p= errorText
