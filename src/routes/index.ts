@@ -252,18 +252,18 @@ export default function (ctx: AppContext) {
   router.post('/circles', async (req, res) => {
     const handle = maybeStr(req.body.handle)?.replace(/^@/g, '').trim()
     const timeCutoff = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString()
-    const interactions = await getInteractions(ctx, handle, 8+15+26, timeCutoff)
+    const interactions = await getInteractions(ctx, handle, 8+15, timeCutoff)
     if (!interactions) {
       return res.send(`User not found: "${handle}"`);
     }
 
-    const layers = [8, 15, 26];
+    const layers = [8, 15];
 
     const config = [
       {distance: 0, count: 1, radius: 110, users: [interactions.user]},
       {distance: 200, count: layers[0], radius: 64, users: interactions.merged.slice(0, 8)},
       {distance: 330, count: layers[1], radius: 58, users: interactions.merged.slice(8)},
-      {distance: 450, count: layers[2], radius: 50, users: interactions.merged.slice(8+15)},
+      // {distance: 450, count: layers[2], radius: 50, users: interactions.merged.slice(8+15)},
     ]
 
     const width = 1000;
