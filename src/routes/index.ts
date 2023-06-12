@@ -37,6 +37,7 @@ const getInteractions = async (ctx: AppContext, handle: string, limit: number, t
               sql`count(*)`.as('commentsGiven')
           ])
           .groupBy('did')
+          .limit(limit)
       )
       .with('quotesTable', (db) => db
           .selectFrom('posts')
@@ -47,6 +48,7 @@ const getInteractions = async (ctx: AppContext, handle: string, limit: number, t
               sql`count(*)`.as('quotesGiven')
           ])
           .groupBy('did')
+          .limit(limit)
       )
       .with('repostsTable', (db) => db
           .selectFrom('reposts')
@@ -54,6 +56,7 @@ const getInteractions = async (ctx: AppContext, handle: string, limit: number, t
           .where('indexedAt', '>', timeCutoff)
           .select([sql`SUBSTR(reposts.subjectUri, 6, 32)`.as('did'), sql`count(*)`.as('repostsGiven')])
           .groupBy('did')
+          .limit(limit)
       )
       .with('likesTable', (db) => db
           .selectFrom('likes')
@@ -64,6 +67,7 @@ const getInteractions = async (ctx: AppContext, handle: string, limit: number, t
               sql`count(*)`.as('likesGiven')
           ])
           .groupBy('did')
+          .limit(limit)
       )
       .selectFrom('profiles')
       .leftJoin('commentsTable', 'commentsTable.did', 'profiles.did')
@@ -111,6 +115,7 @@ const getInteractions = async (ctx: AppContext, handle: string, limit: number, t
               sql`count(*)`.as('commentsReceived')
           ])
           .groupBy('did')
+          .limit(limit)
       )
       .with('quotesTable', (db) => db
           .selectFrom('posts')
@@ -121,6 +126,7 @@ const getInteractions = async (ctx: AppContext, handle: string, limit: number, t
               sql`count(*)`.as('quotesReceived')
           ])
           .groupBy('did')
+          .limit(limit)
       )
       .with('repostsTable', (db) => db
           .selectFrom('reposts')
@@ -128,6 +134,7 @@ const getInteractions = async (ctx: AppContext, handle: string, limit: number, t
           .where('indexedAt', '>', timeCutoff)
           .select([sql`SUBSTR(reposts.uri, 6, 32)`.as('did'), sql`count(*)`.as('repostsReceived')])
           .groupBy('did')
+          .limit(limit)
       )
       .with('likesTable', (db) => db
           .selectFrom('likes')
@@ -138,6 +145,7 @@ const getInteractions = async (ctx: AppContext, handle: string, limit: number, t
               sql`count(*)`.as('likesReceived')
           ])
           .groupBy('did')
+          .limit(limit)
       )
       .selectFrom('profiles')
       .leftJoin('commentsTable', 'commentsTable.did', 'profiles.did')
@@ -266,8 +274,8 @@ export default function (ctx: AppContext) {
       // {distance: 450, count: layers[2], radius: 50, users: interactions.merged.slice(8+15)},
     ]
 
-    const width = 1000;
-    const height = 1000;
+    const width = 800;
+    const height = 800;
   
     const canvas = createCanvas(width, height);
     const cctx = canvas.getContext("2d");
