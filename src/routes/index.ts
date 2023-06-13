@@ -16,7 +16,7 @@ const maybeInt = (val?: string) => {
   return int
 }
 
-const getCircles = async (interactions: any) => {
+const getCircles = async (ctx: AppContext, interactions: any) => {
   const layers = [8, 15];
   const config = [
     {distance: 0, count: 1, radius: 110, users: [interactions.user]},
@@ -64,21 +64,67 @@ const getCircles = async (interactions: any) => {
 
       const defaultAvatarUrl = 'src/routes/person-fill.svg';
 
-      const img = await loadImage(users[i].avatar || defaultAvatarUrl);
-      if (users[i].avatar) {
-        cctx.drawImage(
-          img,
-          centerX - radius,
-          centerY - radius,
-          radius * 2,
-          radius * 2
-        );
-      } else {
-        cctx.drawImage(
-          img,
-          centerX - radius,
-          centerY - radius,
-        );
+      try {
+        if (users[i].avatar) {
+          const img = await loadImage(users[i].avatar + 'fsf')
+          cctx.drawImage(
+            img,
+            centerX - radius,
+            centerY - radius,
+            radius * 2,
+            radius * 2
+          );
+        } else {
+          const img = await loadImage(defaultAvatarUrl)
+          cctx.drawImage(
+            img,
+            centerX - radius,
+            centerY - radius,
+          );
+        }
+      }
+      catch (e: any) {
+        try {
+          const profile = await getProfile(ctx, users[i].did)
+          if (profile?.avatar) {
+            await ctx.db
+            .updateTable('profiles')
+            .set({
+              handle: profile.handle,
+              displayName: profile.displayName,
+              avatar: profile.avatar ?? null,
+              updatedAt: new Date().toISOString(),
+            })
+            .where('did', '=', profile.did)
+            .execute()
+
+            const img = await loadImage(profile.avatar)
+            cctx.drawImage(
+              img,
+              centerX - radius,
+              centerY - radius,
+              radius * 2,
+              radius * 2
+            );
+            console.log(`Error: ${e.message} - updated avatar`)
+          } else {
+            const img = await loadImage(defaultAvatarUrl)
+            cctx.drawImage(
+              img,
+              centerX - radius,
+              centerY - radius,
+            );
+          }
+        }
+        catch (e2: any) {
+          console.log(`Final error: ${e2.message} - using default`)
+          const img = await loadImage(defaultAvatarUrl)
+          cctx.drawImage(
+            img,
+            centerX - radius,
+            centerY - radius,
+          );
+        }
       }
 
       cctx.restore();
@@ -265,7 +311,7 @@ export default function (ctx: AppContext) {
 
   router.use('/interactions', rateLimit({
     windowMs: 10 * 1000,
-    max: 3,
+    max: 5,
     standardHeaders: true,
     legacyHeaders: false, 
   }))
@@ -313,7 +359,7 @@ export default function (ctx: AppContext) {
       } else {
         const interactions = await getInteractions(ctx, user, 8+15, timeCutoff)
         if (!!interactions) {
-          const circlesImage = (await getCircles(interactions)).toBuffer("image/png")
+          const circlesImage = (await getCircles(ctx, interactions)).toBuffer("image/png")
           await ctx.db
           .replaceInto('circles')
           .values({
