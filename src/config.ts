@@ -17,6 +17,7 @@ export type Config = {
   bskyPassword: string
   mysqlDatabase: string
   mysqlHost: string
+  mysqlPort: number
   mysqlUser: string
   mysqlPassword: string
   subscriptionEndpoint: string

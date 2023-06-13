@@ -35,7 +35,7 @@ export class Wolfgang {
 
   static async create(cfg: Config) {
     const app = express()
-    const db = createDb(cfg.mysqlDatabase, cfg.mysqlHost, cfg.mysqlUser, cfg.mysqlPassword)
+    const db = createDb(cfg.mysqlDatabase, cfg.mysqlHost, cfg.mysqlPort, cfg.mysqlUser, cfg.mysqlPassword)
     const api = new BskyAgent({service: 'https://bsky.social'})
 
     const followers = await db

@@ -11,6 +11,7 @@ const run = async () => {
     bskyPassword: maybeStr(process.env.WOLFGANG_BSKY_PASSWORD) ?? '',
     mysqlDatabase: maybeStr(process.env.WOLFGANG_MYSQL_DATABASE) ?? 'bsky',
     mysqlHost: maybeStr(process.env.WOLFGANG_MYSQL_HOST) ?? 'localhost',
+    mysqlPort: maybeInt(process.env.WOLFGANG_MYSQL_PORT) ?? 3306,
     mysqlUser: maybeStr(process.env.WOLFGANG_MYSQL_USER) ?? '',
     mysqlPassword: maybeStr(process.env.WOLFGANG_MYSQL_PASSWORD) ?? '',
     subscriptionEndpoint:
