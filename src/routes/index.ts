@@ -309,13 +309,6 @@ const toRad = (x: number) => x * (Math.PI / 180);
 export default function (ctx: AppContext) {
   const router = express.Router()
 
-  router.use('/interactions', rateLimit({
-    windowMs: 10 * 1000,
-    max: 5,
-    standardHeaders: true,
-    legacyHeaders: false, 
-  }))
-
   router.get('/', async (req, res) => {
     return res.render('index');
   })
