@@ -66,7 +66,7 @@ const getCircles = async (ctx: AppContext, interactions: any) => {
 
       try {
         if (users[i].avatar) {
-          const img = await loadImage(users[i].avatar + 'fsf')
+          const img = await loadImage(users[i].avatar)
           cctx.drawImage(
             img,
             centerX - radius,
