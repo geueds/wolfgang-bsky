@@ -6,6 +6,7 @@ export type DatabaseSchema = {
   follows: Follow
   likes: Like
   reposts: Repost
+  circles: Circle
   wolfgang_sub_state: SubState
 }
 
@@ -74,6 +75,12 @@ export type List = {
   showReplies: boolean
   showImages: boolean
   indexedAt: string
+}
+
+export type Circle = {
+  did: string
+  image: Buffer
+  updatedAt: string
 }
 
 export type SubState = {

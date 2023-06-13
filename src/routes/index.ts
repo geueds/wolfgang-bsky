@@ -89,8 +89,8 @@ const getCircles = async (interactions: any) => {
   return canvas
 }
 
-const getInteractions = async (ctx: AppContext, handle: string, limit: number, timeCutoff: string) => {
-  const user = await ctx.db
+const getProfile = async (ctx: AppContext, handle: string) => {
+  return await ctx.db
   .selectFrom('profiles')
   .select(['did', 'handle', 'displayName', 'avatar'])
   .where(({or, cmpr}) => or([
@@ -100,7 +100,9 @@ const getInteractions = async (ctx: AppContext, handle: string, limit: number, t
   ]))
   .limit(1)
   .executeTakeFirst()
+}
 
+const getInteractions = async (ctx: AppContext, user: any, limit: number, timeCutoff: string) => {
   if (!!user) {
       console.log(`Searching ${limit} interactions of ${user.did}: @${user.handle}`)
 
@@ -278,34 +280,55 @@ export default function (ctx: AppContext) {
 
   router.post('/interactions', async (req, res) => {
     const intType = maybeStr(req.body.submit) ?? undefined
-    if (!intType) {
+    const handle = maybeStr(req.body.handle)?.replace(/^@/g, '').trim() ?? ''
+    if (!intType || handle.length === 0) {
       return res.render('interactions')
     }
-    const handle = maybeStr(req.body.handle)?.replace(/^@/g, '').trim()
     const timeCutoff = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString().slice(0, 10)
 
-    if (intType === 'Table') {
-      const interactions = await getInteractions(ctx, handle, 30, timeCutoff)
+    const user = await getProfile(ctx, handle)
+    if (!user) {
+      return res.render('interactions', { handle: '', errorText: `User not found: "${handle}"`})
+    }
+
+    if (intType === 'Table') {  
+      const interactions = await getInteractions(ctx, user, 30, timeCutoff)
       if (!!interactions) {
         return res.render('interactions', { handle: handle, interactions: interactions})
-      } else {
-        return res.render('interactions', { handle: '', errorText: `User not found: "${handle}"`})
       }
     }
 
     if (intType === 'Circles') {
-      const interactions = await getInteractions(ctx, handle, 8+15, timeCutoff)
-      if (!!interactions) {
-        const circlesImage = await getCircles(interactions)
+      const lastCircles = await ctx.db
+      .selectFrom('circles')
+      .selectAll()
+      .where('did', '=', user.did)
+      .executeTakeFirst()
+
+      if (!!lastCircles && lastCircles.updatedAt > new Date(Date.now() - 6 * 3600 * 1000).toISOString()) {
         res.writeHead(200, {
-            "Content-Type": "image/png",
+          "Content-Type": "image/png",
         });
-        return res.end(circlesImage.toBuffer("image/png"));
+        return res.end(Buffer.from(lastCircles.image));
       } else {
-        return res.render('interactions', { handle: '', errorText: `User not found: "${handle}"`})
+        const interactions = await getInteractions(ctx, user, 8+15, timeCutoff)
+        if (!!interactions) {
+          const circlesImage = (await getCircles(interactions)).toBuffer("image/png")
+          await ctx.db
+          .insertInto('circles')
+          .values({
+            did: interactions.user.did,
+            updatedAt: new Date().toISOString(),
+            image: circlesImage
+          })
+          .execute()
+          res.writeHead(200, {
+            "Content-Type": "image/png",
+          });
+          return res.end(circlesImage);
+        }
       }
     }
-
     return res.render('interactions')
   })
 
