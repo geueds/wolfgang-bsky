@@ -5,6 +5,7 @@ import { createDb, Database } from './db'
 import { FirehoseSubscription } from './subscription'
 import { AppContext, Config } from './config'
 import { BskyAgent } from '@atproto/api'
+import rateLimit from 'express-rate-limit'
 
 var favicon = require('serve-favicon')
 
@@ -55,6 +56,13 @@ export class Wolfgang {
       followers,
     }
     const firehose = new FirehoseSubscription(ctx)
+
+    app.use(rateLimit({
+      windowMs: 30 * 1000,
+      max: 10,
+      standardHeaders: true,
+      legacyHeaders: false, 
+    }))
 
     app.use(cors(), function(req, res, next) {
       res.header("Access-Control-Allow-Origin", "*"); // update to match the domain you will make the request from

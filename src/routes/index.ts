@@ -2,6 +2,7 @@ import express from 'express'
 import { AppContext } from '../config'
 import { sql } from 'kysely'
 import { createCanvas, loadImage } from 'canvas'
+import rateLimit from 'express-rate-limit'  
 
 const maybeStr = (val?: string | any) => {
   if (!val) return undefined
@@ -259,6 +260,13 @@ const toRad = (x: number) => x * (Math.PI / 180);
 
 export default function (ctx: AppContext) {
   const router = express.Router()
+
+  router.use('/interactions', rateLimit({
+    windowMs: 10 * 1000,
+    max: 3,
+    standardHeaders: true,
+    legacyHeaders: false, 
+  }))
 
   router.get('/', async (req, res) => {
     return res.render('index');

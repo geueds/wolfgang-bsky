@@ -24,6 +24,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
+    "express-rate-limit": "^6.7.0",
     "jwt-decode": "^3.1.2",
     "kysely": "^0.25.0",
     "multiformats": "^9.9.0",
