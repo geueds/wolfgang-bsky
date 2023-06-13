@@ -15,6 +15,79 @@ const maybeInt = (val?: string) => {
   return int
 }
 
+const getCircles = async (interactions: any) => {
+  const layers = [8, 15];
+  const config = [
+    {distance: 0, count: 1, radius: 110, users: [interactions.user]},
+    {distance: 200, count: layers[0], radius: 64, users: interactions.table.slice(0, 8)},
+    {distance: 330, count: layers[1], radius: 58, users: interactions.table.slice(8)},
+    // {distance: 450, count: layers[2], radius: 50, users: interactions.table.slice(8+15)}, // 26
+  ]
+
+  const width = 800;
+  const height = 800;
+
+  const canvas = createCanvas(width, height);
+  const cctx = canvas.getContext("2d");
+
+  // fill the background
+  cctx.fillStyle = "#1338BE";
+  cctx.fillRect(0, 0, width, height);
+
+  // loop over the layers
+  for (const [layerIndex, layer] of config.entries()) {
+    const {count, radius, distance, users} = layer;
+
+    const angleSize = 360 / count;
+
+    // loop over each circle of the layer
+    for (let i = 0; i < count; i++) {
+      // We need an offset or the first circle will always on the same line and it looks weird
+      // Try removing this to see what happens
+      const offset = layerIndex * 30;
+
+      // i * angleSize is the angle at which our circle goes
+      // We need to converting to radiant to work with the cos/sin
+      const r = toRad(i * angleSize + offset);
+
+      const centerX = Math.cos(r) * distance + width / 2;
+      const centerY = Math.sin(r) * distance + height / 2;
+
+      // if we are trying to render a circle but we ran out of users, just exit the loop. We are done.
+      if (!users[i]) break;
+
+      cctx.save();
+      cctx.beginPath();
+      cctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+      cctx.clip();
+
+      const defaultAvatarUrl = 'src/routes/person-fill.svg';
+
+      const img = await loadImage(users[i].avatar || defaultAvatarUrl);
+      if (users[i].avatar) {
+        cctx.drawImage(
+          img,
+          centerX - radius,
+          centerY - radius,
+          radius * 2,
+          radius * 2
+        );
+      } else {
+        cctx.drawImage(
+          img,
+          centerX - radius,
+          centerY - radius,
+        );
+      }
+
+      cctx.restore();
+    }
+  }
+  console.log(`figure done: @${interactions.user.handle}`)
+
+  return canvas
+}
+
 const getInteractions = async (ctx: AppContext, handle: string, limit: number, timeCutoff: string) => {
   const user = await ctx.db
   .selectFrom('profiles')
@@ -28,7 +101,7 @@ const getInteractions = async (ctx: AppContext, handle: string, limit: number, t
   .executeTakeFirst()
 
   if (!!user) {
-      console.log(`Searching interactions of ${user.did}: @${user.handle}`)
+      console.log(`Searching ${limit} interactions of ${user.did}: @${user.handle}`)
 
       const queryTable = await ctx.db
       .with('commentsGivenTable', (db) => db
@@ -175,7 +248,7 @@ const getInteractions = async (ctx: AppContext, handle: string, limit: number, t
       .limit(limit)
       .execute()
 
-      console.log(`done: ${user.did}`)
+      console.log(`search done: @${user.handle}`)
 
       return {user: user, table: queryTable }
   }
@@ -196,100 +269,36 @@ export default function (ctx: AppContext) {
   })
 
   router.post('/interactions', async (req, res) => {
-    console.log(req.body)
-    const handle = maybeStr(req.body.handle)?.replace(/^@/g, '').trim()
-    const timeCutoff = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString()
-    const interactions = await getInteractions(ctx, handle, 15, timeCutoff)
-
-    if (!!interactions) {
-      return res.render('interactions', { interactions: interactions });
+    const intType = maybeStr(req.body.submit) ?? undefined
+    if (!intType) {
+      return res.render('interactions')
     }
-    return res.render('interactions', { errorText: `User not found: "${handle}"`})
-  })
-
-  router.post('/circles', async (req, res) => {
     const handle = maybeStr(req.body.handle)?.replace(/^@/g, '').trim()
-    const timeCutoff = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString()
-    const interactions = await getInteractions(ctx, handle, 8+15, timeCutoff)
-    if (!interactions) {
-      return res.send(`User not found: "${handle}"`);
-    }
+    const timeCutoff = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString().slice(0, 10)
 
-    const layers = [8, 15];
-
-    const config = [
-      {distance: 0, count: 1, radius: 110, users: [interactions.user]},
-      {distance: 200, count: layers[0], radius: 64, users: interactions.table.slice(0, 8)},
-      {distance: 330, count: layers[1], radius: 58, users: interactions.table.slice(8)},
-      // {distance: 450, count: layers[2], radius: 50, users: interactions.merged.slice(8+15)},
-    ]
-
-    const width = 800;
-    const height = 800;
-  
-    const canvas = createCanvas(width, height);
-    const cctx = canvas.getContext("2d");
-  
-    // fill the background
-    cctx.fillStyle = "#1338BE";
-    cctx.fillRect(0, 0, width, height);
-  
-    // loop over the layers
-    for (const [layerIndex, layer] of config.entries()) {
-      const {count, radius, distance, users} = layer;
-  
-      const angleSize = 360 / count;
-  
-      // loop over each circle of the layer
-      for (let i = 0; i < count; i++) {
-        // We need an offset or the first circle will always on the same line and it looks weird
-        // Try removing this to see what happens
-        const offset = layerIndex * 30;
-  
-        // i * angleSize is the angle at which our circle goes
-        // We need to converting to radiant to work with the cos/sin
-        const r = toRad(i * angleSize + offset);
-  
-        const centerX = Math.cos(r) * distance + width / 2;
-        const centerY = Math.sin(r) * distance + height / 2;
-  
-        // if we are trying to render a circle but we ran out of users, just exit the loop. We are done.
-        if (!users[i]) break;
-  
-        cctx.save();
-        cctx.beginPath();
-        cctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-        cctx.clip();
-  
-        const defaultAvatarUrl = 'src/routes/person-fill.svg';
-
-        const img = await loadImage(users[i].avatar || defaultAvatarUrl);
-        if (users[i].avatar) {
-          cctx.drawImage(
-            img,
-            centerX - radius,
-            centerY - radius,
-            radius * 2,
-            radius * 2
-          );
-        } else {
-          cctx.drawImage(
-            img,
-            centerX - radius,
-            centerY - radius,
-          );
-        }
-  
-        cctx.restore();
+    if (intType === 'Table') {
+      const interactions = await getInteractions(ctx, handle, 30, timeCutoff)
+      if (!!interactions) {
+        return res.render('interactions', { handle: handle, interactions: interactions})
+      } else {
+        return res.render('interactions', { handle: '', errorText: `User not found: "${handle}"`})
       }
     }
 
-    console.log(`done 4: ${handle}`)
+    if (intType === 'Circles') {
+      const interactions = await getInteractions(ctx, handle, 8+15, timeCutoff)
+      if (!!interactions) {
+        const circlesImage = await getCircles(interactions)
+        res.writeHead(200, {
+            "Content-Type": "image/png",
+        });
+        return res.end(circlesImage.toBuffer("image/png"));
+      } else {
+        return res.render('interactions', { handle: '', errorText: `User not found: "${handle}"`})
+      }
+    }
 
-    res.writeHead(200, {
-        "Content-Type": "image/png",
-    });
-    res.end(canvas.toBuffer("image/png"));
+    return res.render('interactions')
   })
 
   router.get('/blocks', async (req, res) => {

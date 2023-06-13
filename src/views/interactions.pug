@@ -1,9 +1,9 @@
 
 include layout.pug
     form(id="form" action="/interactions" method="post")
-        input(id="handle" type="text" name="handle" value='' placeholder="User")
-        input(id="button" type="submit" name="table" value="Search")
-        input(id="button" type="submit" name="circles" formaction="/circles" value="Circles")
+        input(id="handle" type="text" name="handle" value=handle placeholder="User")
+        input(id="button" type="submit" name="submit" value="Table")
+        input(id="button" type="submit" name="submit" value="Circles" formtarget="_blank")
     
     if !!interactions && !!interactions.table
         table(class="table table-striped table-hover table-sm caption-top")
