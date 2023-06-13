@@ -19,7 +19,11 @@ const getInteractions = async (ctx: AppContext, handle: string, limit: number, t
   const user = await ctx.db
   .selectFrom('profiles')
   .select(['did', 'handle', 'displayName', 'avatar'])
-  .where('handle', '=', handle)
+  .where(({or, cmpr}) => or([
+    cmpr('did', '=', handle),
+    cmpr('handle', '=', handle),
+    cmpr('handle', '=', `${handle}.bsky.social`),
+  ]))
   .limit(1)
   .executeTakeFirst()
 
@@ -29,34 +33,37 @@ const getInteractions = async (ctx: AppContext, handle: string, limit: number, t
       const withOthers = await ctx.db
       .with('commentsTable', (db) => db
           .selectFrom('posts')
-          .where('uri', 'like', `at://${user.did}%`)
+          .where('author', '=', user.did)
           .where('indexedAt', '>', timeCutoff)
           .select([
               sql`SUBSTR(posts.replyParent, 6, 32)`.as('did'),
-              sql`SUM(posts.textLength)`.as('charactersGiven'),
-              sql`count(*)`.as('commentsGiven')
+              sql`SUM(textLength)`.as('charactersGiven'),
+              sql`count(uri)`.as('commentsGiven')
           ])
           .groupBy('did')
-          .limit(limit)
+          .orderBy('commentsGiven', 'desc')
       )
       .with('quotesTable', (db) => db
           .selectFrom('posts')
-          .where('uri', 'like', `at://${user.did}%`)
+          .where('author', '=', user.did)
           .where('indexedAt', '>', timeCutoff)
           .select([
               sql`SUBSTR(posts.quoteUri, 6, 32)`.as('did'),
-              sql`count(*)`.as('quotesGiven')
+              sql`count(uri)`.as('quotesGiven')
           ])
           .groupBy('did')
-          .limit(limit)
+          .orderBy('quotesGiven', 'desc')
       )
       .with('repostsTable', (db) => db
           .selectFrom('reposts')
           .where('uri', 'like', `at://${user.did}%`)
           .where('indexedAt', '>', timeCutoff)
-          .select([sql`SUBSTR(reposts.subjectUri, 6, 32)`.as('did'), sql`count(*)`.as('repostsGiven')])
+          .select([
+              sql`SUBSTR(reposts.subjectUri, 6, 32)`.as('did'),
+              sql`count(uri)`.as('repostsGiven')
+          ])
           .groupBy('did')
-          .limit(limit)
+          .orderBy('repostsGiven', 'desc')
       )
       .with('likesTable', (db) => db
           .selectFrom('likes')
@@ -64,10 +71,10 @@ const getInteractions = async (ctx: AppContext, handle: string, limit: number, t
           .where('indexedAt', '>', timeCutoff)
           .select([
               sql`SUBSTR(likes.subjectUri, 6, 32)`.as('did'),
-              sql`count(*)`.as('likesGiven')
+              sql`count(uri)`.as('likesGiven')
           ])
           .groupBy('did')
-          .limit(limit)
+          .orderBy('likesGiven', 'desc')
       )
       .selectFrom('profiles')
       .leftJoin('commentsTable', 'commentsTable.did', 'profiles.did')
@@ -79,12 +86,12 @@ const getInteractions = async (ctx: AppContext, handle: string, limit: number, t
           'handle',
           'displayName',
           'avatar',
-          'commentsGiven',
-          'quotesGiven',
-          'repostsGiven',
-          'likesGiven',
-          'charactersGiven',
-          sql`(COALESCE(commentsGiven, 0) + COALESCE(quotesGiven, 0) + COALESCE(repostsGiven, 0) + COALESCE(likesGiven, 0))`.as('totalGiven'),
+          sql`IFNULL(commentsGiven, 0)`.as('commentsGiven'),
+          sql`IFNULL(quotesGiven, 0)`.as('quotesGiven'),
+          sql`IFNULL(repostsGiven, 0)`.as('repostsGiven'),
+          sql`IFNULL(likesGiven, 0)`.as('likesGiven'),
+          sql`IFNULL(charactersGiven, 0)`.as('charactersGiven'),
+          sql`(IFNULL(commentsGiven, 0) + IFNULL(quotesGiven, 0) + IFNULL(repostsGiven, 0) + IFNULL(likesGiven, 0))`.as('totalGiven'),
       ])
       .where('profiles.did', '!=', user.did)
       .groupBy([
@@ -112,31 +119,34 @@ const getInteractions = async (ctx: AppContext, handle: string, limit: number, t
           .where('replyParent', 'like', `at://${user.did}%`)
           .where('indexedAt', '>', timeCutoff)
           .select([
-              sql`SUBSTR(posts.uri, 6, 32)`.as('did'),
-              sql`SUM(posts.textLength)`.as('charactersReceived'),
-              sql`count(*)`.as('commentsReceived')
+              sql`author`.as('did'),
+              sql`SUM(textLength)`.as('charactersReceived'),
+              sql`count(uri)`.as('commentsReceived')
           ])
           .groupBy('did')
-          .limit(limit)
+          .orderBy('commentsReceived', 'desc')
       )
       .with('quotesTable', (db) => db
           .selectFrom('posts')
           .where('quoteUri', 'like', `at://${user.did}%`)
           .where('indexedAt', '>', timeCutoff)
           .select([
-              sql`SUBSTR(posts.uri, 6, 32)`.as('did'),
-              sql`count(*)`.as('quotesReceived')
+              sql`author`.as('did'),
+              sql`count(uri)`.as('quotesReceived')
           ])
           .groupBy('did')
-          .limit(limit)
+          .orderBy('quotesReceived', 'desc')
       )
       .with('repostsTable', (db) => db
           .selectFrom('reposts')
           .where('subjectUri', 'like', `at://${user.did}%`)
           .where('indexedAt', '>', timeCutoff)
-          .select([sql`SUBSTR(reposts.uri, 6, 32)`.as('did'), sql`count(*)`.as('repostsReceived')])
+          .select([
+              sql`SUBSTR(reposts.uri, 6, 32)`.as('did'),
+              sql`count(uri)`.as('repostsReceived')
+          ])
           .groupBy('did')
-          .limit(limit)
+          .orderBy('repostsReceived', 'desc')
       )
       .with('likesTable', (db) => db
           .selectFrom('likes')
@@ -144,10 +154,10 @@ const getInteractions = async (ctx: AppContext, handle: string, limit: number, t
           .where('indexedAt', '>', timeCutoff)
           .select([
               sql`SUBSTR(likes.uri, 6, 32)`.as('did'),
-              sql`count(*)`.as('likesReceived')
+              sql`count(uri)`.as('likesReceived')
           ])
           .groupBy('did')
-          .limit(limit)
+          .orderBy('likesReceived', 'desc')
       )
       .selectFrom('profiles')
       .leftJoin('commentsTable', 'commentsTable.did', 'profiles.did')
@@ -159,12 +169,12 @@ const getInteractions = async (ctx: AppContext, handle: string, limit: number, t
           'handle',
           'displayName', 
           'avatar',
-          'charactersReceived',
-          'commentsReceived',
-          'quotesReceived',
-          'repostsReceived',
-          'likesReceived',
-          sql`(COALESCE(commentsReceived, 0) + COALESCE(quotesReceived, 0) + COALESCE(repostsReceived, 0) + COALESCE(likesReceived, 0))`.as('totalReceived'),
+          sql`IFNULL(commentsReceived, 0)`.as('commentsReceived'),
+          sql`IFNULL(quotesReceived, 0)`.as('quotesReceived'),
+          sql`IFNULL(repostsReceived, 0)`.as('repostsReceived'),
+          sql`IFNULL(likesReceived, 0)`.as('likesReceived'),
+          sql`IFNULL(charactersReceived, 0)`.as('charactersReceived'),
+          sql`(IFNULL(commentsReceived, 0) + IFNULL(quotesReceived, 0) + IFNULL(repostsReceived, 0) + IFNULL(likesReceived, 0))`.as('totalReceived'),
       ])
       .where('profiles.did', '!=', user.did)
       .groupBy([
@@ -253,14 +263,15 @@ export default function (ctx: AppContext) {
   })
 
   router.post('/interactions', async (req, res) => {
+    console.log(req.body)
     const handle = maybeStr(req.body.handle)?.replace(/^@/g, '').trim()
     const timeCutoff = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString()
-    const interactions = await getInteractions(ctx, handle, 25, timeCutoff)
+    const interactions = await getInteractions(ctx, handle, 15, timeCutoff)
 
     if (!!interactions) {
-      return res.render('interactions', { handle: handle, interactions: interactions });
+      return res.render('interactions', { interactions: interactions });
     }
-    return res.render('interactions', { handle: handle, errorText: `User not found: "${handle}"`})
+    return res.render('interactions', { errorText: `User not found: "${handle}"`})
   })
 
   router.post('/circles', async (req, res) => {
@@ -360,6 +371,11 @@ export default function (ctx: AppContext) {
       .selectFrom('profiles')
       .select(['did', 'handle'])
       .where('handle', '=', handle)
+      .where(({or, cmpr}) => or([
+        cmpr('did', '=', handle),
+        cmpr('handle', '=', handle),
+        cmpr('handle', '=', `${handle}.bsky.social`),
+      ]))
       .limit(1)
       .executeTakeFirst()
 
