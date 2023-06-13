@@ -23,3 +23,5 @@ include layout.pug
                             td: a(href='https://bsky.app/profile/'+val.did) #{(val.handle.length > 0) ? `@${val.handle}` : val.did}
                             td= val.displayName
                             td(style='text-align:center')= val.indexedAt
+        else
+            p No blocks found! 
