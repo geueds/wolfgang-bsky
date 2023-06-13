@@ -28,7 +28,8 @@
     "kysely": "^0.25.0",
     "multiformats": "^9.9.0",
     "mysql2": "^3.3.3",
-    "pug": "^3.0.2"
+    "pug": "^3.0.2",
+    "serve-favicon": "^2.5.0"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.4",

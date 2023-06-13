@@ -6,6 +6,8 @@ import { FirehoseSubscription } from './subscription'
 import { AppContext, Config } from './config'
 import { BskyAgent } from '@atproto/api'
 
+var favicon = require('serve-favicon')
+
 import path from 'path'
 import cors from 'cors'
 import indexRoute from './routes/index'
@@ -68,6 +70,7 @@ export class Wolfgang {
 
     app.set("view engine", "pug");
     app.set("views", path.join(__dirname, "views"));
+    app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')))
 
     app.use(indexRoute(ctx))
     app.use(feedsRoute(ctx))
