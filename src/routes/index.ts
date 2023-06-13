@@ -315,7 +315,7 @@ export default function (ctx: AppContext) {
         if (!!interactions) {
           const circlesImage = (await getCircles(interactions)).toBuffer("image/png")
           await ctx.db
-          .insertInto('circles')
+          .replaceInto('circles')
           .values({
             did: interactions.user.did,
             updatedAt: new Date().toISOString(),
