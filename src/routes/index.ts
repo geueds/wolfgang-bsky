@@ -309,6 +309,20 @@ const toRad = (x: number) => x * (Math.PI / 180);
 export default function (ctx: AppContext) {
   const router = express.Router()
 
+  const interactionsLimit = rateLimit({
+    windowMs: 20 * 1000,
+    max: 3,
+    standardHeaders: true,
+    legacyHeaders: false, 
+  })
+
+  const blocksLimit = rateLimit({
+    windowMs: 60 * 1000,
+    max: 5,
+    standardHeaders: true,
+    legacyHeaders: false, 
+  })
+
   router.get('/', async (req, res) => {
     return res.render('index');
   })
@@ -317,7 +331,7 @@ export default function (ctx: AppContext) {
     return res.render('interactions')
   })
 
-  router.post('/interactions', async (req, res) => {
+  router.post('/interactions', interactionsLimit, async (req, res) => {
     const intType = maybeStr(req.body.submit) ?? undefined
     const handle = maybeStr(req.body.handle)?.replace(/^@/g, '').trim() ?? ''
     if (!intType || handle.length === 0) {
@@ -371,7 +385,7 @@ export default function (ctx: AppContext) {
     return res.render('interactions')
   })
 
-  router.get('/blocks', async (req, res) => {
+  router.get('/blocks', blocksLimit, async (req, res) => {
     const handle = maybeStr(req.query.handle)?.replace(/^@/g, '').trim()
 
     let userFound = false
