@@ -58,7 +58,7 @@ export class Wolfgang {
     const firehose = new FirehoseSubscription(ctx)
 
     if (!cfg.devel) {
-      app.set('trust proxy', 1)
+      app.set('trust proxy', true)
       app.get('/ip', (request, response) => response.send(request.ip))
     }
 
