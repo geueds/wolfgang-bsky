@@ -5,6 +5,7 @@ const run = async () => {
   dotenv.config()
   const hostname = maybeStr(process.env.WOLFGANG_HOSTNAME) ?? 'example.com'
   const server = await Wolfgang.create({
+    devel: !!maybeInt(process.env.WOLFGANG_DEVEL) ?? true,
     port: maybeInt(process.env.WOLFGANG_PORT) ?? 3000,
     listenhost: maybeStr(process.env.WOLFGANG_LISTENHOST) ?? 'localhost',
     bskyIdentifier: maybeStr(process.env.WOLFGANG_BSKY_IDENTIFIER) ?? '',

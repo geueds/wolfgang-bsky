@@ -10,6 +10,7 @@ export type AppContext = {
 }
 
 export type Config = {
+  devel: boolean
   port: number
   listenhost: string
   hostname: string
