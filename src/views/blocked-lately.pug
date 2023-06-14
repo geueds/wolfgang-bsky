@@ -1,21 +1,25 @@
-include layout.pug
-    p
-        | The 
-        a(href='https://bsky.app/profile/did:plc:y4rd5hesgwwbkblvkkidfs73/feed/blocked-lately') Blocked Lately
-        |  feed is showing the following users' posts:
+doctype html
+html 
+    include head.pug
+    body 
+        include navbar.pug
+        p
+            | The 
+            a(href='https://bsky.app/profile/did:plc:y4rd5hesgwwbkblvkkidfs73/feed/blocked-lately') Blocked Lately
+            |  feed is showing the following users' posts:
 
-    table(border=1)
-        tr 
-            th User 
-            th Display name
-            th(width='50px') # of blocks
-            th Most recent
+        table(border=1)
+            tr 
+                th User 
+                th Display name
+                th(width='50px') # of blocks
+                th Most recent
 
-        each val in query
-            tr
-                td: a(href='https://bsky.app/profile/'+val.subject) #{(val.handle.length > 0) ? `@${val.handle}` : val.subject}
-                td= val.displayName
-                td(style='text-align:center')= val.count
-                td= new Date(val.mostRecent).toLocaleTimeString()
+            each val in query
+                tr
+                    td: a(href='https://bsky.app/profile/'+val.subject) #{(val.handle.length > 0) ? `@${val.handle}` : val.subject}
+                    td= val.displayName
+                    td(style='text-align:center')= val.count
+                    td= new Date(val.mostRecent).toLocaleTimeString()
 
-    p The current query includes all people with more than 10 blocks in the last 24 hours.
+        p The current query includes all people with more than 10 blocks in the last 24 hours.

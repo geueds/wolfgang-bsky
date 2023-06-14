@@ -79,8 +79,10 @@ export type List = {
 
 export type Circle = {
   did: string
-  image: Buffer
-  updatedAt: string
+  interactions: any
+  image: Buffer | null
+  updatedAt: string | null
+  lastCreatedAt: string | null
 }
 
 export type SubState = {

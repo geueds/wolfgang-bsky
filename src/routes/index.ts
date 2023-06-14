@@ -16,7 +16,7 @@ const maybeInt = (val?: string) => {
   return int
 }
 
-const getCircles = async (ctx: AppContext, interactions: any) => {
+const getCircles = async (ctx: AppContext, interactions: any, bg_color: string) => {
   const layers = [8, 15];
   const config = [
     {distance: 0, count: 1, radius: 110, users: [interactions.user]},
@@ -32,7 +32,7 @@ const getCircles = async (ctx: AppContext, interactions: any) => {
   const cctx = canvas.getContext("2d");
 
   // fill the background
-  cctx.fillStyle = "#1338BE";
+  cctx.fillStyle = bg_color;
   cctx.fillRect(0, 0, width, height);
 
   // loop over the layers
@@ -149,6 +149,16 @@ const getProfile = async (ctx: AppContext, handle: string) => {
 }
 
 const getInteractions = async (ctx: AppContext, user: any, limit: number, timeCutoff: string) => {
+  const lastCircles = await ctx.db
+  .selectFrom('circles')
+  .select(['updatedAt', 'interactions'])
+  .where('did', '=', user.did)
+  .executeTakeFirst()
+
+  if (!!lastCircles && !!lastCircles.interactions && lastCircles.interactions.length > 0 && !!lastCircles.updatedAt && lastCircles.updatedAt > new Date(Date.now() - 12 * 3600 * 1000).toISOString()) {
+    return {user: user, table: lastCircles.interactions }
+  }
+
   if (!!user) {
       console.log(`Searching ${limit} interactions of ${user.did}: @${user.handle}`)
 
@@ -299,6 +309,15 @@ const getInteractions = async (ctx: AppContext, user: any, limit: number, timeCu
 
       console.log(`search done: @${user.handle}`)
 
+      await ctx.db
+      .replaceInto('circles')
+      .values({
+        did: user.did,
+        interactions: JSON.stringify(queryTable),
+        updatedAt: new Date().toISOString(),
+      })
+      .execute()
+
       return {user: user, table: queryTable }
   }
   return undefined
@@ -310,8 +329,8 @@ export default function (ctx: AppContext) {
   const router = express.Router()
 
   const interactionsLimit = rateLimit({
-    windowMs: 20 * 1000,
-    max: 3,
+    windowMs: 60 * 1000,
+    max: 10,
     standardHeaders: true,
     legacyHeaders: false, 
   })
@@ -344,89 +363,93 @@ export default function (ctx: AppContext) {
       return res.render('interactions', { handle: '', errorText: `User not found: "${handle}"`})
     }
 
-    if (intType === 'Table') {  
-      const interactions = await getInteractions(ctx, user, 30, timeCutoff)
+    if (intType === 'Search') {  
+      const interactions = await getInteractions(ctx, user, 40, timeCutoff)
       if (!!interactions) {
         return res.render('interactions', { handle: handle, interactions: interactions})
       }
     }
 
     if (intType === 'Circles') {
-      const lastCircles = await ctx.db
-      .selectFrom('circles')
-      .selectAll()
-      .where('did', '=', user.did)
-      .executeTakeFirst()
+      const interactions = await getInteractions(ctx, user, 40, timeCutoff)
+      const bg_color = req.body.bg_color ?? '#000000';
+      const remove_bots = req.body.remove_bots ?? true;
 
-      if (!!lastCircles && lastCircles.updatedAt > new Date(Date.now() - 6 * 3600 * 1000).toISOString()) {
+      if (!!interactions) {
+        const circlesImage = (await getCircles(ctx, interactions, bg_color)).toBuffer("image/png")
+        await ctx.db
+        .updateTable('circles')
+        .set({
+          image: circlesImage,
+          lastCreatedAt: new Date().toISOString(),
+        })
+        .where('did', '=', user.did)
+        .execute()
         res.writeHead(200, {
           "Content-Type": "image/png",
         });
-        return res.end(Buffer.from(lastCircles.image));
-      } else {
-        const interactions = await getInteractions(ctx, user, 8+15, timeCutoff)
-        if (!!interactions) {
-          const circlesImage = (await getCircles(ctx, interactions)).toBuffer("image/png")
-          await ctx.db
-          .replaceInto('circles')
-          .values({
-            did: interactions.user.did,
-            updatedAt: new Date().toISOString(),
-            image: circlesImage
-          })
-          .execute()
-          res.writeHead(200, {
-            "Content-Type": "image/png",
-          });
-          return res.end(circlesImage);
-        }
+        return res.end(circlesImage);
       }
+      // const lastCircles = await ctx.db
+      // .selectFrom('circles')
+      // .selectAll()
+      // .where('did', '=', user.did)
+      // .executeTakeFirst()
+
+      // if (!!lastCircles && lastCircles.updatedAt > new Date(Date.now() + 6 * 3600 * 1000).toISOString()) {
+      //   res.writeHead(200, {
+      //     "Content-Type": "image/png",
+      //   });
+      //   return res.end(Buffer.from(lastCircles.image));
+      // } else {
+      // }
     }
     return res.render('interactions')
   })
 
   router.get('/blocks', blocksLimit, async (req, res) => {
-    const handle = maybeStr(req.query.handle)?.replace(/^@/g, '').trim()
+    return res.render('blocks')
+    // const handle = maybeStr(req.query.handle)?.replace(/^@/g, '').trim()
 
-    let userFound = false
-    let textVal = ''
-    let blocks = {}
+    // let userFound = false
+    // let textVal = ''
+    // let blocks = {}
 
-    if (handle && handle.length > 0) {
-      const user = await ctx.db
-      .selectFrom('profiles')
-      .select(['did', 'handle'])
-      .where('handle', '=', handle)
-      .where(({or, cmpr}) => or([
-        cmpr('did', '=', handle),
-        cmpr('handle', '=', handle),
-        cmpr('handle', '=', `${handle}.bsky.social`),
-      ]))
-      .limit(1)
-      .executeTakeFirst()
+    // if (handle && handle.length > 0) {
+    //   const user = await ctx.db
+    //   .selectFrom('profiles')
+    //   .select(['did', 'handle'])
+    //   .where('handle', '=', handle)
+    //   .where(({or, cmpr}) => or([
+    //     cmpr('did', '=', handle),
+    //     cmpr('handle', '=', handle),
+    //     cmpr('handle', '=', `${handle}.bsky.social`),
+    //   ]))
+    //   .limit(1)
+    //   .executeTakeFirst()
 
-      if (!!user) {
-        console.log(`Searching blocks of ${user.did}: @${user.handle}`)
-        userFound = true
-        textVal = ''
+    //   if (!!user) {
+    //     console.log(`Searching blocks of ${user.did}: @${user.handle}`)
+    //     userFound = true
+    //     textVal = ''
 
-        blocks = await ctx.db
-        .selectFrom('blocks')
-        .innerJoin('profiles', 'profiles.did', 'blocks.author')
-        .select(['did', 'handle', 'displayName', 'blocks.indexedAt'])
-        .where('subject', '=', user.did)
-        .orderBy('indexedAt', 'desc')
-        .execute()
-      } else {
-        userFound = false
-        textVal = `User not found: "${handle}"`
-      }
-    }
+    //     blocks = await ctx.db
+    //     .selectFrom('blocks')
+    //     .innerJoin('profiles', 'profiles.did', 'blocks.author')
+    //     .select(['did', 'handle', 'displayName', 'blocks.indexedAt'])
+    //     .where('subject', '=', user.did)
+    //     .orderBy('indexedAt', 'desc')
+    //     .execute()
+    //   } else {
+    //     userFound = false
+    //     textVal = `User not found: "${handle}"`
+    //   }
+    // }
 
-    return res.render('blocks', { handle: handle, userFound: userFound, textVal: textVal, blocks: blocks });
+    // return res.render('blocks', { handle: handle, userFound: userFound, textVal: textVal, blocks: blocks });
   })
 
-  router.get('/topblocks', async (req, res) => {
+  router.get('/_topblocks_', async (req, res) => {
     const query = await ctx.db
     .selectFrom('blocks')
     .innerJoin('profiles', 'subject', 'did')
@@ -451,7 +474,7 @@ export default function (ctx: AppContext) {
     return res.render('topBlocks', { query:query, since: since?.value });
   })
 
-  router.get('/topfollows', async (req, res) => {
+  router.get('/_topfollows_', async (req, res) => {
     const query = await ctx.db
     .selectFrom('follows')
     .innerJoin('profiles', 'subject', 'did')

@@ -1,61 +1,84 @@
+doctype html
+html 
+    include head.pug
+    body 
+        include navbar.pug
+        div(class='container-lg text-center mt-3')
+            h5 Interactions
+            if !interactions && errorText 
+                div.row(class='justify-content-center mt-2'): p= errorText
 
-include layout.pug
-    form(id="form" action="/interactions" method="post")
-        input(id="handle" type="text" name="handle" value=handle placeholder="User")
-        input(id="button" type="submit" name="submit" value="Table")
-        input(id="button" type="submit" name="submit" value="Circles" formtarget="_blank")
-    
-    if !!interactions && !!interactions.table
-        table(class="table table-striped table-hover table-sm caption-top")
-            caption
-                =`Top interactions of @${interactions.user.handle} in the last 7 days `
-                | (sent 
-                i(class="bi bi-box-arrow-up")
-                | , received 
-                i(class="bi bi-box-arrow-in-down")
-                | )
+            form(id="form" action="/interactions" method="post")
+                div.row(class='align-items-center justify-content-center')
+                    div.col-sm-12.col-md-4
+                        div.input-group.input-group-sm
+                            span.input-group-text @
+                            input.form-control(id="handle" type="text" name="handle" value=handle placeholder="your handle")
+                            button.btn.btn-outline-secondary(type="submit" name="submit" value="Search") Search
+                if !!interactions && !!interactions.table
+                    div.row(class='align-items-center justify-content-center mt-2')
+                        div.col-sm-12.col-md-4
+                            div.d-inline-block
+                                div.input-group.input-group-sm
+                                    span.input-group-text Background color
+                                    input(type="color" name="bg_color" value="#1338BE" style="width: 40px;")
+                                //- div.input-group.input-group-sm
+                                //-     span.input-group-text Remove main bots
+                                //-     div.input-group-text: input.form-check-input(type="checkbox" role="switch" id="include_bots" name="include_bots")
+                                div.d-grid
+                                    button.btn.btn-sm.btn-outline-secondary(type="submit" name="submit" value="Circles" formtarget="_blank") Generate image
 
-            thead
-                tr(style='text-align: center; vertical-align: middle')
-                    th(width='20px' rowspan=2) #
-                    th(rowspan=2) user 
-                    th(colspan=2) characters
-                    th(colspan=2) replies
-                    th(colspan=2) reposts
-                    th(colspan=2) likes
-                    th(rowspan=2) total
-                tr(style='text-align: center')
-                    th: i(class="bi bi-box-arrow-up")
-                    th: i(class="bi bi-box-arrow-in-down")
-                    th: i(class="bi bi-box-arrow-up")
-                    th: i(class="bi bi-box-arrow-in-down")
-                    th: i(class="bi bi-box-arrow-up")
-                    th: i(class="bi bi-box-arrow-in-down")
-                    th: i(class="bi bi-box-arrow-up")
-                    th: i(class="bi bi-box-arrow-in-down")
-            tbody
-                each val, idx in interactions.table
+            if !!interactions && !!interactions.table
+                div(class='row align-items-center justify-content-center mt-2')
+                    div(class='col-auto')
+                        =`Top interactions of @${interactions.user.handle} in the last 7 days `
+                        | (sent 
+                        i(class="bi bi-box-arrow-up")
+                        | , received 
+                        i(class="bi bi-box-arrow-in-down")
+                        | ) 
+            table(class="table table-striped table-hover table-sm mt-2")
+                thead
                     tr(style='text-align: center; vertical-align: middle')
-                        td= idx+1
-                        td(style='text-align: left')
-                            div(class='container text-left align-items-start')
-                                div(class='row')
-                                    div(class='col-md-auto align-items-center' style="display: flex;")
-                                        if val.avatar
-                                            img(src=val.avatar width='32px' height='32px' style='border-radius: 20%;')
-                                        else 
-                                            i(class="bi bi-person-square" style="font-size: 2rem")
-                                    div(class='col align-items-center')
-                                        div= val.displayName
-                                        a(href='https://bsky.app/profile/'+val.did style="font-size: 0.8rem") #{(val.handle.length > 0) ? `@${val.handle}` : val.subject}
-                        td= val.charactersGiven
-                        td= val.charactersReceived
-                        td= val.commentsGiven
-                        td= val.commentsReceived
-                        td= val.repostsGiven+val.quotesGiven
-                        td= val.repostsReceived+val.quotesReceived
-                        td= val.likesGiven
-                        td= val.likesReceived
-                        td= val.total
-    else if errorText 
-        p= errorText
+                        th(width='30px' rowspan=2) #
+                        th(rowspan=2 title="user") user 
+                        th(colspan=2 title="number of characters"): i.bi.bi-hash
+                        th(colspan=2 title="number of replies"): i.bi.bi-chat-square-text-fill
+                        th(colspan=2 title="number of reposts"): i.bi.bi-repeat
+                        th(colspan=2 title="number of likes"): i.bi.bi-heart-fill
+                        th(rowspan=2 title="total") total
+                    tr(style='text-align: center')
+                        th: i(class="bi bi-box-arrow-up")
+                        th: i(class="bi bi-box-arrow-in-down")
+                        th: i(class="bi bi-box-arrow-up")
+                        th: i(class="bi bi-box-arrow-in-down")
+                        th: i(class="bi bi-box-arrow-up")
+                        th: i(class="bi bi-box-arrow-in-down")
+                        th: i(class="bi bi-box-arrow-up")
+                        th: i(class="bi bi-box-arrow-in-down")
+
+                if !!interactions && !!interactions.table
+                    tbody
+                        each val, idx in interactions.table
+                            tr(style='text-align: center; vertical-align: middle')
+                                td= idx+1
+                                td(style='text-align: left')
+                                    div(class='container text-left align-items-start')
+                                        div(class='row')
+                                            div(class='col-auto align-items-center' style="display: flex;")
+                                                if val.avatar
+                                                    img(src=val.avatar width='32px' height='32px' style='border-radius: 20%;')
+                                                else 
+                                                    i(class="bi bi-person-square" style="font-size: 2rem")
+                                            div(class='col-auto align-items-center')
+                                                div= val.displayName
+                                                a(href='https://bsky.app/profile/'+val.did style="font-size: 0.8rem") #{(val.handle.length > 0) ? `@${val.handle}` : val.subject}
+                                td= val.charactersGiven
+                                td= val.charactersReceived
+                                td= val.commentsGiven
+                                td= val.commentsReceived
+                                td= val.repostsGiven+val.quotesGiven
+                                td= val.repostsReceived+val.quotesReceived
+                                td= val.likesGiven
+                                td= val.likesReceived
+                                td= val.total

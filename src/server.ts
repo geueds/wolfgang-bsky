@@ -63,11 +63,13 @@ export class Wolfgang {
     }
 
     app.use(rateLimit({
-      windowMs: 30 * 1000,
-      max: 10,
+      windowMs: 60 * 1000,
+      max: 30,
       standardHeaders: true,
       legacyHeaders: false, 
     }))
+
+    app.use('/static', express.static(path.join(__dirname, 'public')))
 
     app.use(cors(), function(req, res, next) {
       res.header("Access-Control-Allow-Origin", "*"); // update to match the domain you will make the request from

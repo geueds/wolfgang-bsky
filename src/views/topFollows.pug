@@ -1,17 +1,21 @@
-include layout.pug
-    p= `50 most followed people in the last 24 hours:`
-    table(border=1)
-        tr 
-            th #
-            th User 
-            th Display name
-            th(width='50px') # of follows
-            th Most recent
+doctype html
+html 
+    include head.pug
+    body 
+        include navbar.pug
+        p= `50 most followed people in the last 24 hours:`
+        table(border=1)
+            tr 
+                th #
+                th User 
+                th Display name
+                th(width='50px') # of follows
+                th Most recent
 
-        each val, idx in query
-            tr
-                td= idx+1
-                td: a(href='https://bsky.app/profile/'+val.subject) #{(val.handle.length > 0) ? `@${val.handle}` : val.subject}
-                td= val.displayName
-                td(style='text-align:center')= val.count
-                td= new Date(val.mostRecent).toTimeString()
+            each val, idx in query
+                tr
+                    td= idx+1
+                    td: a(href='https://bsky.app/profile/'+val.subject) #{(val.handle.length > 0) ? `@${val.handle}` : val.subject}
+                    td= val.displayName
+                    td(style='text-align:center')= val.count
+                    td= new Date(val.mostRecent).toTimeString()

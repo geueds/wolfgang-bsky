@@ -1,21 +1,25 @@
-include layout.pug
-    p Feeds:
-    ul 
-        li
-            a(href=`https://bsky.app/profile/${publisher}/feed/lista-azul`) lista-azul
-            |  | 
-            a(href='https://azul.raios.xyz') set list
-            |  | custom list of people
-        li
-            a(href=`https://bsky.app/profile/${publisher}/feed/lista-verde`) lista-verde
-            |  | 
-            a(href='https://azul.raios.xyz') set list
-            |  | custom list of hashtags
-        li
-            a(href=`https://bsky.app/profile/${publisher}/feed/blocked-lately`) blocked-lately
-            |  | 
-            a(href='/feeds/blocked-lately') feed info
-            |  | most blocked users lately
-        li
-            a(href=`https://bsky.app/profile/${publisher}/feed/nudes-brasil`) nudes-brasil
-            |  | Brazilians are horny
+doctype html
+html 
+    include head.pug
+    body 
+        include navbar.pug
+        p Feeds:
+        ul 
+            li
+                a(href=`https://bsky.app/profile/${publisher}/feed/lista-azul`) lista-azul
+                |  | 
+                a(href='https://azul.raios.xyz') set list
+                |  | custom list of people
+            li
+                a(href=`https://bsky.app/profile/${publisher}/feed/lista-verde`) lista-verde
+                |  | 
+                a(href='https://azul.raios.xyz') set list
+                |  | custom list of hashtags
+            li
+                a(href=`https://bsky.app/profile/${publisher}/feed/blocked-lately`) blocked-lately
+                |  | 
+                a(href='/feeds/blocked-lately') feed info
+                |  | most blocked users lately
+            li
+                a(href=`https://bsky.app/profile/${publisher}/feed/nudes-brasil`) nudes-brasil
+                |  | Brazilians are horny
