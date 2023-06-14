@@ -376,19 +376,20 @@ export default function (ctx: AppContext) {
       const remove_bots = req.body.remove_bots ?? true;
 
       if (!!interactions) {
-        const circlesImage = (await getCircles(ctx, interactions, bg_color)).toBuffer("image/png")
-        await ctx.db
-        .updateTable('circles')
-        .set({
-          image: circlesImage,
-          lastCreatedAt: new Date().toISOString(),
-        })
-        .where('did', '=', user.did)
-        .execute()
+        const circlesImage = await getCircles(ctx, interactions, bg_color)
+        const imageBuffer = circlesImage.toBuffer("image/png")
+        // await ctx.db
+        // .updateTable('circles')
+        // .set({
+        //   image: circlesImage,
+        //   lastCreatedAt: new Date().toISOString(),
+        // })
+        // .where('did', '=', user.did)
+        // .execute()
         res.writeHead(200, {
           "Content-Type": "image/png",
         });
-        return res.end(circlesImage);
+        return res.end(imageBuffer);
       }
       // const lastCircles = await ctx.db
       // .selectFrom('circles')
