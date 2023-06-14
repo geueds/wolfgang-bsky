@@ -16,7 +16,16 @@ const maybeInt = (val?: string) => {
   return int
 }
 
-const getCircles = async (ctx: AppContext, interactions: any, bg_color: string) => {
+function hex_is_light(color: string) {
+  const hex = color.replace('#', '');
+  const c_r = parseInt(hex.substring(0, 0 + 2), 16);
+  const c_g = parseInt(hex.substring(2, 2 + 2), 16);
+  const c_b = parseInt(hex.substring(4, 4 + 2), 16);
+  const brightness = ((c_r * 299) + (c_g * 587) + (c_b * 114)) / 1000;
+  return brightness > 155;
+}
+
+const getCircles = async (ctx: AppContext, interactions: any, bg_color: string, locale: string) => {
   const layers = [8, 15];
   const config = [
     {distance: 0, count: 1, radius: 110, users: [interactions.user]},
@@ -34,6 +43,19 @@ const getCircles = async (ctx: AppContext, interactions: any, bg_color: string) 
   // fill the background
   cctx.fillStyle = bg_color;
   cctx.fillRect(0, 0, width, height);
+
+  // Date from and to
+  const textFrom = new Date(Date.now() - 7 * 24 * 3600 * 1000).toLocaleDateString(locale, { day: 'numeric', month: 'numeric' })
+  const textTo = new Date().toLocaleDateString(locale, { day: 'numeric', month: 'numeric' })
+  const textFull = `${textFrom} - ${textTo}`
+  const textColor = hex_is_light(bg_color) ? '#000000' : '#CCCCCC';
+  cctx.font = '24px Garamond'
+  cctx.fillStyle = textColor
+  cctx.fillText(textFull, 10, 30)
+
+  cctx.font = '16px Garamond'
+  cctx.fillStyle = textColor
+  cctx.fillText('wolfgang.raios.xyz', 640, 790)
 
   // loop over the layers
   for (const [layerIndex, layer] of config.entries()) {
@@ -353,6 +375,9 @@ export default function (ctx: AppContext) {
   router.post('/interactions', interactionsLimit, async (req, res) => {
     const intType = maybeStr(req.body.submit) ?? undefined
     const handle = maybeStr(req.body.handle)?.replace(/^@/g, '').trim() ?? ''
+    //@ts-ignore
+    const locale = req.getLocale() ?? req.locale ?? 'en'
+
     if (!intType || handle.length === 0) {
       return res.render('interactions')
     }
@@ -376,7 +401,7 @@ export default function (ctx: AppContext) {
       const remove_bots = req.body.remove_bots ?? true;
 
       if (!!interactions) {
-        const circlesImage = await getCircles(ctx, interactions, bg_color)
+        const circlesImage = await getCircles(ctx, interactions, bg_color, locale)
         const imageBuffer = circlesImage.toBuffer("image/png")
         // await ctx.db
         // .updateTable('circles')
@@ -408,8 +433,8 @@ export default function (ctx: AppContext) {
     return res.render('interactions')
   })
 
-  router.get('/blocks', blocksLimit, async (req, res) => {
-    return res.render('blocks')
+  // router.get('/blocks', blocksLimit, async (req, res) => {
+  //   return res.render('blocks')
     // const handle = maybeStr(req.query.handle)?.replace(/^@/g, '').trim()
 
     // let userFound = false
@@ -448,7 +473,7 @@ export default function (ctx: AppContext) {
     // }
 
     // return res.render('blocks', { handle: handle, userFound: userFound, textVal: textVal, blocks: blocks });
-  })
+  // })
 
   router.get('/_topblocks_', async (req, res) => {
     const query = await ctx.db
