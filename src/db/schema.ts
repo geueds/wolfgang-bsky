@@ -7,7 +7,14 @@ export type DatabaseSchema = {
   likes: Like
   reposts: Repost
   circles: Circle
+  derived_data: DerivedData
   wolfgang_sub_state: SubState
+}
+
+export type DerivedData = {
+  name: string
+  data: string
+  updatedAt: string
 }
 
 export type Profile = {

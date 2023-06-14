@@ -49,13 +49,13 @@ const getCircles = async (ctx: AppContext, interactions: any, bg_color: string, 
   const textTo = new Date().toLocaleDateString(locale, { day: 'numeric', month: 'numeric' })
   const textFull = `${textFrom} - ${textTo}`
   const textColor = hex_is_light(bg_color) ? '#000000' : '#CCCCCC';
-  cctx.font = '24px Garamond'
+  cctx.font = '16px Garamond'
   cctx.fillStyle = textColor
-  cctx.fillText(textFull, 10, 30)
+  cctx.fillText(textFull, 10, 20)
 
   cctx.font = '16px Garamond'
   cctx.fillStyle = textColor
-  cctx.fillText('wolfgang.raios.xyz', 640, 790)
+  cctx.fillText('wolfgang.raios.xyz', 640, 20)
 
   // loop over the layers
   for (const [layerIndex, layer] of config.entries()) {
@@ -475,54 +475,113 @@ export default function (ctx: AppContext) {
     // return res.render('blocks', { handle: handle, userFound: userFound, textVal: textVal, blocks: blocks });
   // })
 
-  router.get('/_topblocks_', async (req, res) => {
-    const query = await ctx.db
-    .selectFrom('blocks')
-    .innerJoin('profiles', 'subject', 'did')
-    .select([
-      'subject', 
-      sql`count(*)`.as('count'), 
-      sql`max(blocks.indexedAt)`.as('mostRecent'),
-      'handle', 
-      'displayName'
-    ])
-    .groupBy('subject')
-    .where('blocks.indexedAt', '>', new Date(Date.now() - 1 * 24 * 3600 * 1000).toISOString())
-    .orderBy(sql`count(*)`, 'desc')
-    .limit(50)
-    .execute()
+  router.get('/update/:name/:value?', async (req, res) => {
+    console.log(`request @ /update/${req.params.name}/${req.params.value} from ${req.ip}`)
+    if (req.ip !== '127.0.0.1') {
+      res.end()
+    }
+    
+    if (req.params.name === 'follows') {
+      const data = await ctx.db
+      .selectFrom('follows')
+      .innerJoin('profiles', 'subject', 'did')
+      .select([
+        'subject', 
+        'handle', 
+        'displayName',
+        sql`count(uri)`.as('count'), 
+        sql`max(follows.indexedAt)`.as('mostRecent')
+      ])
+      .groupBy('subject')
+      .where('follows.indexedAt', '>', new Date(Date.now() - 1 * 24 * 3600 * 1000).toISOString().substring(0, 10))
+      .orderBy('count', 'desc')
+      .limit(100)
+      .execute()
 
-    const since = await ctx.db
-    .selectFrom('blocks')
-    .select(sql`min(indexedAt)`.as('value'))
-    .executeTakeFirst()
+      await ctx.db
+      .replaceInto('derived_data')
+      .values({
+        name: 'top_follows',
+        data: JSON.stringify(data),
+        updatedAt: new Date().toISOString()
+      })
+      .executeTakeFirst()
+      res.send('done!')
+    }
 
-    return res.render('topBlocks', { query:query, since: since?.value });
+    if (req.params.name === 'blocks') {
+      const data = await ctx.db
+      .selectFrom('blocks')
+      .innerJoin('profiles', 'subject', 'did')
+      .select([
+        'subject', 
+        'handle', 
+        'displayName',
+        sql`count(uri)`.as('count'), 
+        sql`max(blocks.indexedAt)`.as('mostRecent')
+      ])
+      .groupBy('subject')
+      .where('blocks.indexedAt', '>', new Date(Date.now() - 1 * 24 * 3600 * 1000).toISOString().substring(0, 10))
+      .orderBy('count', 'desc')
+      .limit(100)
+      .execute()
+
+      await ctx.db
+      .replaceInto('derived_data')
+      .values({
+        name: 'top_blocks',
+        data: JSON.stringify(data),
+        updatedAt: new Date().toISOString()
+      })
+      .executeTakeFirst()
+      res.send('done!')
+    }
+
+    if (req.params.name === 'profile') {
+      if (!!req.params.value) {
+        const profile = await ctx.api.getProfile({ actor: req.params.value })
+        if (!!profile) {
+          await ctx.db
+          .updateTable('profiles')
+          .set({
+            handle: profile.data.handle,
+            displayName: profile.data.displayName,
+            avatar: profile.data.avatar ?? null,
+            description: profile.data.description ?? null,
+            updatedAt: new Date().toISOString(),
+          })
+          .where('did', '=', profile.data.did)
+          .execute()
+          res.json(profile)
+        } else {
+          res.send('error getting profile')
+        }
+      } else {
+        res.send('no value given')
+      }
+    }
+
+    res.end()
   })
 
-  router.get('/_topfollows_', async (req, res) => {
+  router.get('/topfollows', async (req, res) => {
     const query = await ctx.db
-    .selectFrom('follows')
-    .innerJoin('profiles', 'subject', 'did')
-    .select([
-      'subject', 
-      sql`count(*)`.as('count'), 
-      sql`max(follows.indexedAt)`.as('mostRecent'),
-      'handle', 
-      'displayName'
-    ])
-    .groupBy('subject')
-    .where('follows.indexedAt', '>', new Date(Date.now() - 1 * 24 * 3600 * 1000).toISOString())
-    .orderBy(sql`count(*)`, 'desc')
-    .limit(50)
-    .execute()
-
-    const since = await ctx.db
-    .selectFrom('follows')
-    .select(sql`min(indexedAt)`.as('value'))
+    .selectFrom('derived_data')
+    .select('data')
+    .where('name', '=', 'top_follows')
     .executeTakeFirst()
 
-    return res.render('topFollows', { query:query, since: since?.value });
+    return res.render('topFollows', { query: query?.data });
+  })
+
+  router.get('/topblocks', async (req, res) => {
+    const query = await ctx.db
+    .selectFrom('derived_data')
+    .select('data')
+    .where('name', '=', 'top_blocks')
+    .executeTakeFirst()
+
+    return res.render('topBlocks', { query: query?.data });
   })
 
   return router
