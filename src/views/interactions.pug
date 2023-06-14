@@ -8,8 +8,6 @@ html
             if !interactions && errorText 
                 div.row(class='justify-content-center mt-2'): p= errorText
 
-            script 
-                include disableButton.js
             form(id="form" action="/interactions" method="post")
                 div.row(class='align-items-center justify-content-center')
                     div.col-sm-12.col-md-4
