@@ -1,6 +1,6 @@
 {
     "INTERACTIONS_WORD" : "Interactions",
-    "INTERACTIONS_BUTTON_SEARCH" : "Search",
+    "INTERACTIONS_SEARCH_BUTTON" : "Search",
     "INTERACTIONS_SEARCH_INPUT": "your handle",
     "INTERACTIONS_BACKGROUND_COLOR": "Background color",
     "INTERACTIONS_IMAGE_BUTTON": "Generate image",
