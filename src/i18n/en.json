@@ -1,0 +1,16 @@
+{
+    "INTERACTIONS_WORD" : "Interactions",
+    "INTERACTIONS_BUTTON_SEARCH" : "Search",
+    "INTERACTIONS_SEARCH_INPUT": "your handle",
+    "INTERACTIONS_BACKGROUND_COLOR": "Background color",
+    "INTERACTIONS_IMAGE_BUTTON": "Generate image",
+    "INTERACTIONS_TABLE_TOP_TEXT": "Top interactions of @{{handle}} in the last 7 days",
+    "INTERACTIONS_TABLE_USER": "user",
+    "INTERACTIONS_TABLE_CHARACTERS": "number of characters",
+    "INTERACTIONS_TABLE_REPLIES": "number of replies",
+    "INTERACTIONS_TABLE_REPOSTS": "number of reposts",
+    "INTERACTIONS_TABLE_LIKES": "number of likes",
+    "INTERACTIONS_TABLE_TOTAL": "total",
+    "INTERACTIONS_TABLE_SENT": "sent",
+    "INTERACTIONS_TABLE_RECEIVED": "received"
+}

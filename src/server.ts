@@ -7,12 +7,18 @@ import { AppContext, Config } from './config'
 import { BskyAgent } from '@atproto/api'
 import rateLimit from 'express-rate-limit'
 
-var favicon = require('serve-favicon')
-
 import path from 'path'
 import cors from 'cors'
 import indexRoute from './routes/index'
 import feedsRoute from './routes/feeds'
+
+var favicon = require('serve-favicon')
+
+var i18n = require("i18n")
+i18n.configure({
+  locales: ['en', 'pt-BR'],
+  directory: path.join(__dirname, '/i18n')
+})
 
 export class Wolfgang {
   public app: express.Application
@@ -86,6 +92,8 @@ export class Wolfgang {
     app.set("view engine", "pug");
     app.set("views", path.join(__dirname, "views"));
     app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')))
+
+    app.use(i18n.init)
 
     app.use(indexRoute(ctx))
     app.use(feedsRoute(ctx))

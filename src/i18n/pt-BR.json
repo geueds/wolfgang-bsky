@@ -1,0 +1,16 @@
+{
+	"INTERACTIONS_WORD": "Interações",
+	"INTERACTIONS_SEARCH_BUTTON": "Procurar",
+	"INTERACTIONS_SEARCH_INPUT": "seu usuário",
+	"INTERACTIONS_BACKGROUND_COLOR": "Cor de fundo",
+	"INTERACTIONS_IMAGE_BUTTON": "Gerar imagem",
+	"INTERACTIONS_TABLE_TOP_TEXT": "Maiores interações de @{{handle}} nos últimos 7 dias",
+	"INTERACTIONS_TABLE_USER": "usuário",
+	"INTERACTIONS_TABLE_CHARACTERS": "número de caracteres",
+	"INTERACTIONS_TABLE_REPLIES": "número de comentários",
+	"INTERACTIONS_TABLE_REPOSTS": "número de repostagens",
+	"INTERACTIONS_TABLE_LIKES": "número de curtidas",
+	"INTERACTIONS_TABLE_TOTAL": "total",
+	"INTERACTIONS_TABLE_SENT": "enviadas",
+	"INTERACTIONS_TABLE_RECEIVED": "recebidas"
+}
