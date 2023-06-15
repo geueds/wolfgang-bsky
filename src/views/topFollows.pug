@@ -3,13 +3,13 @@ html
     include head.pug
     body 
         include navbar.pug
-        p= `50 most followed people in the last 24 hours:`
-        table(border=1)
+        p= `Most followed people in the last 24 hours:`
+        table.table.table-striped.table-hover.table-sm(class="mt-2")
             tr 
                 th #
                 th User 
                 th Display name
-                th(width='50px') # of follows
+                th # of follows
                 th Most recent
 
             each val, idx in query
