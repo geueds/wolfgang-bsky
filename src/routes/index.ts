@@ -177,13 +177,18 @@ const getInteractions = async (ctx: AppContext, user: any, limit: number, timeCu
   .where('did', '=', user.did)
   .executeTakeFirst()
 
-  if (!!lastCircles && !!lastCircles.interactions && lastCircles.interactions.length > 0 && !!lastCircles.updatedAt && lastCircles.updatedAt > new Date(Date.now() - 12 * 3600 * 1000).toISOString()) {
+  if (!!lastCircles && !!lastCircles.interactions && lastCircles.interactions.length > 0 && !!lastCircles.updatedAt && lastCircles.updatedAt > new Date(Date.now() - 6 * 3600 * 1000).toISOString()) {
     return {user: user, table: lastCircles.interactions, updatedAt: lastCircles.updatedAt }
   }
 
   if (!!user) {
       console.log(`Searching ${limit} interactions of ${user.did}: @${user.handle}`)
 
+      const DO_NOT_INCLUDE_THESE = [
+        user.did,
+        'did:plc:xxno7p4xtpkxtn4ok6prtlcb', // @lovefairy.nl
+      ]
+      
       const queryTable = await ctx.db
       .with('commentsGivenTable', (db) => db
           .selectFrom('posts')
@@ -303,7 +308,7 @@ const getInteractions = async (ctx: AppContext, user: any, limit: number, timeCu
           sql`(IFNULL(commentsReceived, 0) + IFNULL(quotesReceived, 0) + IFNULL(repostsReceived, 0) + IFNULL(likesReceived, 0))`.as('totalReceived'),
           sql`(IFNULL(commentsGiven, 0) + IFNULL(quotesGiven, 0) + IFNULL(repostsGiven, 0) + IFNULL(likesGiven, 0) + IFNULL(commentsReceived, 0) + IFNULL(quotesReceived, 0) + IFNULL(repostsReceived, 0) + IFNULL(likesReceived, 0))`.as('total')
       ])
-      .where('profiles.did', '!=', user.did)
+      .where('profiles.did', 'not in', DO_NOT_INCLUDE_THESE)
       .groupBy([
           'profiles.did',
           'commentsGiven',
