@@ -32,6 +32,12 @@ html
                 div(class='row align-items-center justify-content-center mt-2')
                     div(class='col-auto')
                         =__("INTERACTIONS_TABLE_TOP_TEXT", { handle : interactions.user.handle})
+                div(class='row align-items-center justify-content-center mt-2')
+                    div(class='col-auto' style="font-size: 0.75rem;")
+                        = "(" + __("LAST_UPDATE") + ": " + new Date(interactions.updatedAt).toLocaleString(getLocale()) + ")"
+                div(class='row align-items-center justify-content-center mt-2')
+                    div(class='col-auto' style="font-size: 0.75rem;")
+                        = __("UPDATE_FREQUENCY_MSG")
 
             table(class="table table-striped table-hover table-sm mt-2")
                 thead

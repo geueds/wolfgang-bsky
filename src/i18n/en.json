@@ -15,6 +15,7 @@
     "INTERACTIONS_TABLE_RECEIVED": "received",
 
     "LAST_UPDATE": "last updated",
+    "UPDATE_FREQUENCY_MSG": "you can update this every 12 hours",
 
     "TOP_BLOCKED" : "Top blocked",
     "TOP_FOLLOWED" : "Top followed",

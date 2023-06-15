@@ -13,7 +13,7 @@ html
                     div(class='col-auto')
                         =__("TOP_BLOCKED_TABLE_TOP_TEXT", { lastUpdate : new Date(query.updatedAt).toLocaleDateString()})
                 div(class='row align-items-center justify-content-center mt-2')
-                    div(class='col-auto')
+                    div(class='col-auto' style="font-size: 0.75rem;")
                         = "(" + __("LAST_UPDATE") + ": " + new Date(query.updatedAt).toLocaleString(getLocale()) + ")"
             table.table.table-striped.table-hover.table-sm(class="mt-2")
                 thead

@@ -178,7 +178,7 @@ const getInteractions = async (ctx: AppContext, user: any, limit: number, timeCu
   .executeTakeFirst()
 
   if (!!lastCircles && !!lastCircles.interactions && lastCircles.interactions.length > 0 && !!lastCircles.updatedAt && lastCircles.updatedAt > new Date(Date.now() - 12 * 3600 * 1000).toISOString()) {
-    return {user: user, table: lastCircles.interactions }
+    return {user: user, table: lastCircles.interactions, updatedAt: lastCircles.updatedAt }
   }
 
   if (!!user) {
@@ -340,7 +340,7 @@ const getInteractions = async (ctx: AppContext, user: any, limit: number, timeCu
       })
       .execute()
 
-      return {user: user, table: queryTable }
+      return {user: user, table: queryTable, updatedAt: new Date().toISOString() }
   }
   return undefined
 }
@@ -391,7 +391,8 @@ export default function (ctx: AppContext) {
     if (intType === 'Search') {  
       const interactions = await getInteractions(ctx, user, 40, timeCutoff)
       if (!!interactions) {
-        return res.render('interactions', { handle: handle, interactions: interactions})
+        console.log(interactions.updatedAt)
+        return res.render('interactions', { handle: handle, interactions: interactions })
       }
     }
 
