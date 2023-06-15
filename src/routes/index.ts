@@ -107,20 +107,21 @@ const getCircles = async (ctx: AppContext, interactions: any, bg_color: string, 
       }
       catch (e: any) {
         try {
-          const profile = await getProfile(ctx, users[i].did)
-          if (profile?.avatar) {
+          const profile = await ctx.api.getProfile({ actor: users[i].did } )
+          if (profile?.data.avatar) {
             await ctx.db
             .updateTable('profiles')
             .set({
-              handle: profile.handle,
-              displayName: profile.displayName,
-              avatar: profile.avatar ?? null,
+              handle: profile.data.handle,
+              displayName: profile.data.displayName,
+              avatar: profile.data.avatar ?? null,
+              description: profile.data.description ?? null,
               updatedAt: new Date().toISOString(),
             })
-            .where('did', '=', profile.did)
+            .where('did', '=', profile.data.did)
             .execute()
 
-            const img = await loadImage(profile.avatar)
+            const img = await loadImage(profile.data.avatar)
             cctx.drawImage(
               img,
               centerX - radius,
