@@ -486,9 +486,11 @@ export default function (ctx: AppContext) {
       .selectFrom('follows')
       .innerJoin('profiles', 'subject', 'did')
       .select([
+        'did',
         'subject', 
         'handle', 
         'displayName',
+        'avatar',
         sql`count(uri)`.as('count'), 
         sql`max(follows.indexedAt)`.as('mostRecent')
       ])
@@ -514,16 +516,18 @@ export default function (ctx: AppContext) {
       .selectFrom('blocks')
       .innerJoin('profiles', 'subject', 'did')
       .select([
+        'did',
         'subject', 
         'handle', 
         'displayName',
+        'avatar',
         sql`count(uri)`.as('count'), 
         sql`max(blocks.indexedAt)`.as('mostRecent')
       ])
       .groupBy('subject')
       .where('blocks.indexedAt', '>', new Date(Date.now() - 1 * 24 * 3600 * 1000).toISOString().substring(0, 10))
       .orderBy('count', 'desc')
-      .limit(100)
+      .limit(25)
       .execute()
 
       await ctx.db
@@ -564,24 +568,24 @@ export default function (ctx: AppContext) {
     res.end()
   })
 
-  router.get('/topfollows', async (req, res) => {
+  router.get('/top_followed', async (req, res) => {
     const query = await ctx.db
     .selectFrom('derived_data')
-    .select('data')
+    .select(['data', 'updatedAt'])
     .where('name', '=', 'top_follows')
     .executeTakeFirst()
 
-    return res.render('topFollows', { query: query?.data });
+    return res.render('topFollows', { query: query });
   })
 
-  router.get('/topblocks', async (req, res) => {
+  router.get('/top_blocked', async (req, res) => {
     const query = await ctx.db
     .selectFrom('derived_data')
-    .select('data')
+    .select(['data', 'updatedAt'])
     .where('name', '=', 'top_blocks')
     .executeTakeFirst()
 
-    return res.render('topBlocks', { query: query?.data });
+    return res.render('topBlocks', { query: query });
   })
 
   return router

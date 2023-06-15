@@ -12,5 +12,16 @@
     "INTERACTIONS_TABLE_LIKES": "number of likes",
     "INTERACTIONS_TABLE_TOTAL": "total",
     "INTERACTIONS_TABLE_SENT": "sent",
-    "INTERACTIONS_TABLE_RECEIVED": "received"
+    "INTERACTIONS_TABLE_RECEIVED": "received",
+
+    "LAST_UPDATE": "last updated",
+
+    "TOP_BLOCKED" : "Top blocked",
+    "TOP_FOLLOWED" : "Top followed",
+    "TOP_FOLLOWED_TABLE_TOP_TEXT": "The most followed users in the last 48 hours",
+    "TOP_BLOCKED_TABLE_TOP_TEXT": "The most blocked users in the last 48 hours",
+    "TABLE_USER": "user",
+    "TABLE_FOLLOWS": "count",
+    "TABLE_BLOCKS": "count",
+    "TABLE_MOSTRECENT": "most recent"
 }

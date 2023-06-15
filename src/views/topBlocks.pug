@@ -3,19 +3,38 @@ html
     include head.pug
     body 
         include navbar.pug
-        p= `50 most blocked people in the last 24 hours:`
-        table
-            tr 
-                th #
-                th User 
-                th Display name
-                th(width='50px') # of blocks
-                th Most recent
+        div(class='container text-center mt-3')
+            h5= __('TOP_BLOCKED')
+            if !query
+                div.row(class='justify-content-center mt-2') Error
+            
+            if !!query && query.data
+                div(class='row align-items-center justify-content-center mt-2')
+                    div(class='col-auto')
+                        =__("TOP_BLOCKED_TABLE_TOP_TEXT", { lastUpdate : new Date(query.updatedAt).toLocaleDateString()})
+                div(class='row align-items-center justify-content-center mt-2')
+                    div(class='col-auto')
+                        = "(" + __("LAST_UPDATE") + ": " + new Date(query.updatedAt).toLocaleString(getLocale()) + ")"
+            table.table.table-striped.table-hover.table-sm(class="mt-2")
+                thead
+                    tr(style='text-align: center; vertical-align: middle')
+                        th #
+                        th(title=__('TABLE_USER'))= __('TABLE_USER') 
+                        th(title=__('TABLE_FOLLOWS'))= __('TABLE_FOLLOWS')
 
-            each val, idx in query
-                tr
-                    td= idx+1
-                    td: a(href='https://bsky.app/profile/'+val.subject) #{(val.handle.length > 0) ? `@${val.handle}` : val.subject}
-                    td= val.displayName
-                    td(style='text-align:center')= val.count
-                    td= new Date(val.mostRecent).toTimeString()
+                if !!query && query.data
+                    tbody
+                        each val, idx in query.data
+                            tr(style='text-align: center; vertical-align: middle')
+                                td= idx+1
+                                td(style='text-align: left')
+                                    div(class='text-left align-items-start' style="display: flex; align-items: center;")
+                                        div(style="width: 44px;")
+                                            if val.avatar
+                                                img(src=val.avatar, width='32px', height='32px', style='border-radius: 20%;')
+                                            else 
+                                                i(class="bi bi-person-square" style="font-size: 2rem")
+                                        div(style="word-wrap: break-word;")
+                                            div= val.displayName
+                                            a(href='https://bsky.app/profile/'+val.did style="font-size: 0.75rem") #{(val.handle.length > 0) ? `@${val.handle}` : val.subject}
+                                td(style='text-align:center')= val.count
