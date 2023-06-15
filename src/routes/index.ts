@@ -396,7 +396,6 @@ export default function (ctx: AppContext) {
     if (intType === 'Search') {  
       const interactions = await getInteractions(ctx, user, 40, timeCutoff)
       if (!!interactions) {
-        console.log(interactions.updatedAt)
         return res.render('interactions', { handle: handle, interactions: interactions })
       }
     }
@@ -501,7 +500,7 @@ export default function (ctx: AppContext) {
         sql`max(follows.indexedAt)`.as('mostRecent')
       ])
       .groupBy('subject')
-      .where('follows.indexedAt', '>', new Date(Date.now() - 1 * 24 * 3600 * 1000).toISOString().substring(0, 10))
+      .where('follows.indexedAt', '>', new Date(Date.now() - 1 * 48 * 3600 * 1000).toISOString().substring(0, 10))
       .orderBy('count', 'desc')
       .limit(100)
       .execute()
@@ -531,7 +530,7 @@ export default function (ctx: AppContext) {
         sql`max(blocks.indexedAt)`.as('mostRecent')
       ])
       .groupBy('subject')
-      .where('blocks.indexedAt', '>', new Date(Date.now() - 1 * 24 * 3600 * 1000).toISOString().substring(0, 10))
+      .where('blocks.indexedAt', '>', new Date(Date.now() - 1 * 48 * 3600 * 1000).toISOString().substring(0, 10))
       .orderBy('count', 'desc')
       .limit(25)
       .execute()
