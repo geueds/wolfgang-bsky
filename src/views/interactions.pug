@@ -3,7 +3,7 @@ html
     include head.pug
     body 
         include navbar.pug
-        div(class='container-lg text-center mt-3')
+        div(class='container text-center mt-3')
             h5= __('INTERACTIONS_WORD')
             if !interactions && errorText 
                 div.row(class='justify-content-center mt-2'): p= errorText
@@ -59,16 +59,15 @@ html
                             tr(style='text-align: center; vertical-align: middle')
                                 td= idx+1
                                 td(style='text-align: left')
-                                    div(class='container text-left align-items-start')
-                                        div(class='row')
-                                            div(class='col-auto align-items-center' style="display: flex;")
-                                                if val.avatar
-                                                    img(src=val.avatar width='32px' height='32px' style='border-radius: 20%;')
-                                                else 
-                                                    i(class="bi bi-person-square" style="font-size: 2rem")
-                                            div(class='col-auto align-items-center')
-                                                div= val.displayName
-                                                a(href='https://bsky.app/profile/'+val.did style="font-size: 0.8rem") #{(val.handle.length > 0) ? `@${val.handle}` : val.subject}
+                                    div(class='text-left align-items-start' style="display: flex; align-items: center;")
+                                        div(style="width: 44px;")
+                                            if val.avatar
+                                                img(src=val.avatar, width='32px', height='32px', style='border-radius: 20%;')
+                                            else 
+                                                i(class="bi bi-person-square" style="font-size: 2rem")
+                                        div(style="word-wrap: break-word;")
+                                            div= val.displayName
+                                            a(href='https://bsky.app/profile/'+val.did style="font-size: 0.8rem") #{(val.handle.length > 0) ? `@${val.handle}` : val.subject}
                                 td= val.charactersGiven
                                 td= val.charactersReceived
                                 td= val.commentsGiven
