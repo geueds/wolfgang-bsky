@@ -171,7 +171,7 @@ const getCircles = async (ctx: AppContext, profile: any, interactions: Interacti
               radius * 2,
               radius * 2
             );
-            console.log(`Error: ${e.message} - updated avatar`)
+            ctx.log(`Error: ${e.message} - updated avatar`)
           } else {
             const img = await loadImage(defaultAvatarUrl)
             cctx.drawImage(
@@ -182,7 +182,7 @@ const getCircles = async (ctx: AppContext, profile: any, interactions: Interacti
           }
         }
         catch (e2: any) {
-          console.log(`Final error: ${e2.message} - using default`)
+          ctx.log(`Final error: ${e2.message} - using default`)
           const img = await loadImage(defaultAvatarUrl)
           cctx.drawImage(
             img,
@@ -195,7 +195,7 @@ const getCircles = async (ctx: AppContext, profile: any, interactions: Interacti
       cctx.restore();
     }
   }
-  console.log(`figure done: @${profile.handle}`)
+  ctx.log(`figure done: @${profile.handle}`)
 
   return canvas
 }
@@ -225,7 +225,7 @@ const getInteractionsData = async (ctx: AppContext, profile: any, limit: number,
   }
 
   if (!!profile) {
-      console.log(`Searching ${limit} interactions of ${profile.did}: @${profile.handle}`)
+      ctx.log(`Searching ${limit} interactions of ${profile.did}: @${profile.handle}`)
       const queryTable = await ctx.db
       .with('commentsGivenTable', (db) => db
           .selectFrom('posts')
@@ -371,7 +371,7 @@ const getInteractionsData = async (ctx: AppContext, profile: any, limit: number,
       .limit(limit)
       .execute()
 
-      console.log(`search done: @${profile.handle}`)
+      ctx.log(`search done: @${profile.handle}`)
 
       await ctx.db
       .replaceInto('circles')
@@ -514,7 +514,7 @@ export default function (ctx: AppContext) {
     //   .executeTakeFirst()
 
     //   if (!!user) {
-    //     console.log(`Searching blocks of ${user.did}: @${user.handle}`)
+    //     ctx.log(`Searching blocks of ${user.did}: @${user.handle}`)
     //     userFound = true
     //     textVal = ''
 
@@ -535,7 +535,7 @@ export default function (ctx: AppContext) {
   // })
 
   router.get('/update/:name/:value?', async (req, res) => {
-    console.log(`request @ /update/${req.params.name}/${req.params.value} from ${req.ip}`)
+    ctx.log(`request @ /update/${req.params.name}/${req.params.value} from ${req.ip}`)
     if (!['127.0.0.1', '::1'].includes(req.ip)) {
       res.end()
     }

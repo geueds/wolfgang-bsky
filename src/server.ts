@@ -7,7 +7,6 @@ import { BskyAgent } from '@atproto/api'
 import rateLimit from 'express-rate-limit'
 
 import path from 'path'
-import cors from 'cors'
 import indexRoute from './routes/index'
 import feedsRoute from './routes/feeds'
 
@@ -40,6 +39,8 @@ export class Wolfgang {
     this.api = api
   }
 
+
+
   static async create(cfg: Config) {
     const app = express()
     const db = createDb(cfg.mysqlDatabase, cfg.mysqlHost, cfg.mysqlPort, cfg.mysqlUser, cfg.mysqlPassword)
@@ -52,12 +53,17 @@ export class Wolfgang {
     .execute()
     const lastUpdated = new Date().toISOString()
 
+    const log = (text: string) => {
+      console.log(`[${new Date().toLocaleTimeString()}] ${text}`)
+    }
+
     const ctx: AppContext = {
       db,
       cfg,
       api,
       lastUpdated,
       followers,
+      log,
     }
 
     if (!cfg.devel) {
@@ -72,7 +78,9 @@ export class Wolfgang {
       legacyHeaders: false, 
     }))
 
-    scheduledTasks(ctx)
+    if (!cfg.devel) {
+      scheduledTasks(ctx)
+    }
 
     app.use('/static', express.static(path.join(__dirname, 'public')))
 

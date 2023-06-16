@@ -4,12 +4,12 @@ import * as dData from './derived_data'
 
 const scheduledTasks = async (ctx: AppContext) => {
     cron.schedule("0 * * * *", async () => {
-        console.log('Updating top blocked')
+        ctx.log('Updating top blocked')
         dData.updateTopBlocked(ctx)
     });
 
     cron.schedule("30 * * * *", async () => {
-        console.log('Updating top followed')
+        ctx.log('Updating top followed')
         dData.updateTopFollowed(ctx)
     });
 }
