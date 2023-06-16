@@ -221,11 +221,11 @@ const getInteractionsData = async (ctx: AppContext, profile: any, limit: number,
   .executeTakeFirst()
 
   if (!!lastCircles && !!lastCircles.interactions && lastCircles.interactions.length > 0 && !!lastCircles.updatedAt && lastCircles.updatedAt > new Date(Date.now() - 6 * 3600 * 1000).toISOString()) {
+    ctx.log(`Found current interactions of ${profile.did}: @${profile.handle}`)
     return {interactions: lastCircles.interactions, updatedAt: lastCircles.updatedAt }
   }
 
   if (!!profile) {
-      ctx.log(`Searching ${limit} interactions of ${profile.did}: @${profile.handle}`)
       const queryTable = await ctx.db
       .with('commentsGivenTable', (db) => db
           .selectFrom('posts')
