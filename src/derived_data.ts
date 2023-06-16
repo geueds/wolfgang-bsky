@@ -1,4 +1,4 @@
-import { AppContext } from '../config'
+import { AppContext } from './config'
 import { sql } from 'kysely'
 
 export async function updateTopFollowed(ctx: AppContext) {

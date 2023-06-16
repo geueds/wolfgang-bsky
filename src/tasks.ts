@@ -1,6 +1,6 @@
 var cron = require('node-cron');
 import { AppContext } from './config'
-import * as dData from './util/derived_data'
+import * as dData from './derived_data'
 
 const scheduledTasks = async (ctx: AppContext) => {
     cron.schedule("0 * * * *", async () => {

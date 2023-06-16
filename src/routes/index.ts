@@ -4,7 +4,7 @@ import { sql } from 'kysely'
 import { createCanvas, loadImage } from 'canvas'
 import rateLimit from 'express-rate-limit'  
 
-import * as dData from '../util/derived_data'
+import * as dData from '../derived_data'
 
 const maybeStr = (val?: string | any) => {
   if (!val) return undefined

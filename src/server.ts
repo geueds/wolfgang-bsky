@@ -2,7 +2,6 @@ import http from 'http'
 import events from 'events'
 import express from 'express'
 import { createDb, Database } from './db'
-import { FirehoseSubscription } from './subscription'
 import { AppContext, Config } from './config'
 import { BskyAgent } from '@atproto/api'
 import rateLimit from 'express-rate-limit'
@@ -26,20 +25,17 @@ export class Wolfgang {
   public app: express.Application
   public server?: http.Server
   public db: Database
-  public firehose: FirehoseSubscription
   public cfg: Config
   public api: BskyAgent
 
   constructor(
     app: express.Application,
     db: Database,
-    firehose: FirehoseSubscription,
     cfg: Config,
     api: BskyAgent
   ) {
     this.app = app
     this.db = db
-    this.firehose = firehose
     this.cfg = cfg
     this.api = api
   }
@@ -63,7 +59,6 @@ export class Wolfgang {
       lastUpdated,
       followers,
     }
-    const firehose = new FirehoseSubscription(ctx)
 
     if (!cfg.devel) {
       app.set('trust proxy', true)
@@ -102,7 +97,7 @@ export class Wolfgang {
     app.use(indexRoute(ctx))
     app.use(feedsRoute(ctx))
 
-    return new Wolfgang(app, db, firehose, cfg, api)
+    return new Wolfgang(app, db, cfg, api)
   }
 
   async start(): Promise<http.Server> {
