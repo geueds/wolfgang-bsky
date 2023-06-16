@@ -12,6 +12,11 @@ const scheduledTasks = async (ctx: AppContext) => {
         ctx.log('Updating top followed')
         dData.updateTopFollowed(ctx)
     });
+
+    cron.schedule("*/5 * * * * ", async () => {
+        ctx.log('Updating Wolfgang followers')
+        ctx.followers = await dData.updateLickablePeople(ctx)
+    })
 }
 
 export default scheduledTasks

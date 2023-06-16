@@ -11,6 +11,7 @@ import indexRoute from './routes/index'
 import feedsRoute from './routes/feeds'
 
 import scheduledTasks from './tasks'
+import * as dData from './derived_data'
 
 var favicon = require('serve-favicon')
 
@@ -39,19 +40,14 @@ export class Wolfgang {
     this.api = api
   }
 
-
-
   static async create(cfg: Config) {
     const app = express()
     const db = createDb(cfg.mysqlDatabase, cfg.mysqlHost, cfg.mysqlPort, cfg.mysqlUser, cfg.mysqlPassword)
     const api = new BskyAgent({service: 'https://bsky.social'})
-
-    const followers = await db
-    .selectFrom('follows')
-    .select(['uri', 'author'])
-    .where('subject', '=', cfg.bskyIdentifier)
-    .execute()
-    const lastUpdated = new Date().toISOString()
+    await api.login({
+      identifier: cfg.bskyIdentifier,
+      password: cfg.bskyPassword
+    })
 
     const log = (text: string) => {
       console.log(`[${new Date().toLocaleTimeString()}] ${text}`)
@@ -61,8 +57,7 @@ export class Wolfgang {
       db,
       cfg,
       api,
-      lastUpdated,
-      followers,
+      followers: [],
       log,
     }
 
@@ -78,6 +73,7 @@ export class Wolfgang {
       legacyHeaders: false, 
     }))
 
+    ctx.followers = await dData.updateLickablePeople(ctx)
     if (!cfg.devel) {
       scheduledTasks(ctx)
     }
@@ -109,11 +105,6 @@ export class Wolfgang {
   }
 
   async start(): Promise<http.Server> {
-    await this.api.login({
-      identifier: this.cfg.bskyIdentifier,
-      password: this.cfg.bskyPassword
-    })
-    // this.firehose.run()
     this.server = this.app.listen(this.cfg.port, this.cfg.listenhost)
     await events.once(this.server, 'listening')
     return this.server

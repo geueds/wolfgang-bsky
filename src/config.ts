@@ -5,8 +5,9 @@ export type AppContext = {
   db: Database
   cfg: Config
   api: BskyAgent
-  lastUpdated: string
-  followers: { [key: string]: string }[]
+  followers: {
+    author: string
+  }[]
   log: (text: string) => void
 }
 

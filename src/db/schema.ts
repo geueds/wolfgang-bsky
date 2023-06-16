@@ -86,7 +86,7 @@ export type List = {
 
 export type Circle = {
   did: string
-  interactions: any
+  interactions: string | {[key : string]: string | number}[]
   image: Buffer | null
   updatedAt: string | null
   lastCreatedAt: string | null

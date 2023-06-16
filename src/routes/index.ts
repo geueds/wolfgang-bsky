@@ -461,7 +461,7 @@ export default function (ctx: AppContext) {
       }
 
       if (!!interactions_data) {
-        const circlesImage = await getCircles(ctx, profile, interactions_data.interactions, circlesOptions)
+        const circlesImage = await getCircles(ctx, profile, interactions_data.interactions as Interactions, circlesOptions)
         const imageBuffer = circlesImage.toBuffer("image/png")
         // await ctx.db
         // .updateTable('circles')
