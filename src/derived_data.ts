@@ -5,8 +5,6 @@ export async function updateLickablePosts(ctx: AppContext) {
 }
 
 export async function updateLickablePeople(ctx: AppContext) {
-  const timeStart = Date.now()
-
   const follows = await ctx.db
   .selectFrom('follows')
   .innerJoin('profiles', 'profiles.did', 'follows.subject')
@@ -21,21 +19,30 @@ export async function updateLickablePeople(ctx: AppContext) {
   .where('subject', '=', ctx.cfg.bskyIdentifier)
   .execute()
 
-  follows.filter(x => !followers.map(q => q.author).includes(x.subject)).forEach(user => {
-    ctx.log(`to unfollow: ${user.handle}`)
+  const query = await ctx.db
+  .selectFrom('derived_data')
+  .select('data')
+  .where('name', '=', 'top_blocks')
+  .executeTakeFirst()
+  // @ts-ignore
+  const top_blocked = query?.data.map(x => x.did)
+
+  follows.filter(x => !followers.map(q => q.author).includes(x.subject)).forEach(follow => {
+    ctx.log(`[followers] unfollowing: ${follow.handle} [${follow.subject}]`)
+    ctx.api.deleteFollow(follow.uri)
   })
 
-  followers.filter(x => !follows.map(q => q.subject).includes(x.author)).forEach(user => {
-    ctx.log(`to follow: ${user.handle}`)
+  followers.filter(x => !follows.map(q => q.subject).includes(x.author)).forEach(follower => {
+    if (!top_blocked.includes(follower.author)) {
+      ctx.log(`[followers] following: ${follower.handle} [${follower.author}]`)
+      ctx.api.follow(follower.author)
+    }
   })
 
-  ctx.log(`Updated bot followers in ${(Date.now() - timeStart)/1000}s`)
   return followers
 }
 
 export async function updateTopFollowed(ctx: AppContext) {
-  const timeStart = Date.now()
-
   const data = await ctx.db
   .selectFrom('follows')
   .innerJoin('profiles', 'subject', 'did')
@@ -62,13 +69,9 @@ export async function updateTopFollowed(ctx: AppContext) {
     updatedAt: new Date().toISOString()
   })
   .executeTakeFirst()
-
-  ctx.log(`Updated top followed in ${(Date.now() - timeStart)/1000}s`)
 }
 
 export async function updateTopBlocked(ctx: AppContext) {
-  const timeStart = Date.now()
-
   const data = await ctx.db
   .selectFrom('blocks')
   .innerJoin('profiles', 'subject', 'did')
@@ -95,8 +98,6 @@ export async function updateTopBlocked(ctx: AppContext) {
     updatedAt: new Date().toISOString()
   })
   .executeTakeFirst()
-
-  ctx.log(`Updated top blocked in ${(Date.now() - timeStart)/1000}s`)
 }
 
 export async function updateProfile(ctx: AppContext, actor: string) {

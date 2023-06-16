@@ -74,9 +74,7 @@ export class Wolfgang {
     }))
 
     ctx.followers = await dData.updateLickablePeople(ctx)
-    if (!cfg.devel) {
-      scheduledTasks(ctx)
-    }
+    scheduledTasks(ctx)
 
     app.use('/static', express.static(path.join(__dirname, 'public')))
 

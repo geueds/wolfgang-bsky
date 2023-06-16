@@ -6,15 +6,20 @@ export type DatabaseSchema = {
   follows: Follow
   likes: Like
   reposts: Repost
+  licks: Lick
   circles: Circle
   derived_data: DerivedData
-  wolfgang_sub_state: SubState
 }
 
 export type DerivedData = {
   name: string
   data: string
   updatedAt: string
+}
+
+export type Lick = {
+  uri: string
+  indexedAt: string
 }
 
 export type Profile = {
@@ -53,8 +58,8 @@ export type Block = {
 
 export type Follow = {
   uri: string
-  cid: string
-  author: string
+  cid: string | undefined
+  author: any
   subject: string
   indexedAt: string
 }

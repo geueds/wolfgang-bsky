@@ -3,19 +3,25 @@ import { AppContext } from './config'
 import * as dData from './derived_data'
 
 const scheduledTasks = async (ctx: AppContext) => {
-    cron.schedule("0 * * * *", async () => {
-        ctx.log('Updating top blocked')
-        dData.updateTopBlocked(ctx)
-    });
 
-    cron.schedule("30 * * * *", async () => {
-        ctx.log('Updating top followed')
-        dData.updateTopFollowed(ctx)
-    });
+    if (!ctx.cfg.devel) {
+        cron.schedule("0 * * * *", async () => {
+            const timeStart = Date.now()
+            await dData.updateTopBlocked(ctx)
+            ctx.log(`Updated top blocked in ${(Date.now() - timeStart)/1000}s`)
+        });
+
+        cron.schedule("30 * * * *", async () => {
+            const timeStart = Date.now()
+            await dData.updateTopFollowed(ctx)
+            ctx.log(`Updated top followed in ${(Date.now() - timeStart)/1000}s`)
+        });
+    }
 
     cron.schedule("*/5 * * * * ", async () => {
-        ctx.log('Updating Wolfgang followers')
+        const timeStart = Date.now()
         ctx.followers = await dData.updateLickablePeople(ctx)
+        ctx.log(`Updated bot followers in ${(Date.now() - timeStart)/1000}s`)
     })
 }
 
