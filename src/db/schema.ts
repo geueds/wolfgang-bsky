@@ -19,8 +19,13 @@ export type DerivedData = {
 
 export type Lick = {
   uri: string
+  author: string
   indexedAt: string
 }
+
+export type Languages = {
+  [key : string] : number
+}[]
 
 export type Profile = {
   did: string
@@ -28,6 +33,7 @@ export type Profile = {
   displayName: string | null
   avatar: string | null
   description: string | null
+  languages: Languages
   indexedAt: string
   updatedAt: string | null
 }
@@ -40,6 +46,7 @@ export type Post = {
   replyRoot: string | null
   quoteUri: string | null
   keywords: string | null
+  languages: Languages
   hasImages: number
   textLength: number | null
   comments: number | null

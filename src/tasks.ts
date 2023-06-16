@@ -20,6 +20,12 @@ const scheduledTasks = async (ctx: AppContext) => {
 
     cron.schedule("*/5 * * * * ", async () => {
         const timeStart = Date.now()
+        await dData.updateLickablePosts(ctx)
+        ctx.log(`Searched for new posts in ${(Date.now() - timeStart)/1000}s`)
+    })
+
+    cron.schedule("*/5 * * * * ", async () => {
+        const timeStart = Date.now()
         ctx.followers = await dData.updateLickablePeople(ctx)
         ctx.log(`Updated bot followers in ${(Date.now() - timeStart)/1000}s`)
     })

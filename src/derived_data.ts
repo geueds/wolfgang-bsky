@@ -2,6 +2,39 @@ import { AppContext } from './config'
 import { sql } from 'kysely'
 
 export async function updateLickablePosts(ctx: AppContext) {
+  const posts = await ctx.db
+  .selectFrom('posts')
+  .innerJoin('profiles', 'profiles.did', 'posts.author')
+  .select([
+    'uri',
+    'author',
+    'handle',
+    'posts.languages',
+    sql`(2*reposts + likes)`.as('points'),
+    'posts.indexedAt'
+  ])
+  .where('author', 'in', ctx.followers.map(x => x.author))
+  .where('posts.indexedAt', '<', new Date(Date.now() - 1*15*60*1000).toISOString())
+  .where('posts.indexedAt', '>', new Date(Date.now() - 3*60*60*1000).toISOString())
+  .where('replyRoot', 'is', null)
+  .where('posts.languages', 'is not', null)
+  .orderBy('posts.indexedAt', 'desc')
+  .execute()
+
+  const ptbrPosts = posts
+  .filter(post => {
+    return Object.entries(post.languages)
+    .map(x => ({lang: x[0], prob: x[1]}))
+    .sort((a, b) => (b.prob > a.prob) ? 1 : -1)
+    .slice(0, 5)
+    .filter(x => x.lang === 'portuguese')
+    .length > 0
+  })
+  .filter(post => post.points as number > 6 && post.points as number < 25)
+
+  ptbrPosts.forEach(post => {
+    console.log(`${post.points} ${new Date(post.indexedAt).toLocaleTimeString()} ${post.handle} https://bsky.app/profile/${post.author}/post/${post.uri.split('/').slice(-1)}`)
+  })
 }
 
 export async function updateLickablePeople(ctx: AppContext) {
