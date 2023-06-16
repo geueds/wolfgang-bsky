@@ -226,6 +226,7 @@ const getInteractionsData = async (ctx: AppContext, profile: any, limit: number,
   }
 
   if (!!profile) {
+      ctx.log(`Searching ${limit} interactions of ${profile.did}: @${profile.handle}`)
       const queryTable = await ctx.db
       .with('commentsGivenTable', (db) => db
           .selectFrom('posts')
