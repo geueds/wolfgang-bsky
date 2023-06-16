@@ -2,7 +2,7 @@ import express from 'express'
 import { AppContext } from '../config'
 import { sql } from 'kysely'
 import { createCanvas, loadImage } from 'canvas'
-import rateLimit from 'express-rate-limit'  
+import rateLimit from 'express-rate-limit'
 
 import * as dData from '../derived_data'
 
@@ -27,12 +27,52 @@ function hex_is_light(color: string) {
   return brightness > 155;
 }
 
-const getCircles = async (ctx: AppContext, interactions: any, bg_color: string, locale: string) => {
+const DO_NOT_INCLUDE_THESE = [
+  'did:plc:xxno7p4xtpkxtn4ok6prtlcb', // @lovefairy.nl
+  'did:plc:db645kt5coo7teuoxdjhq34x', // @blueskybaddies.bsky.social
+]
+
+type CirclesOptions = {
+  locale: string
+  bg_color: string
+  remove_bots: boolean
+  only_mine: boolean
+}
+
+type Interactions = {
+  did: string
+  handle: string
+  displayName: string
+  avatar: string
+  commentsGiven: number
+  quotesGiven: number
+  likesGiven: number
+  charactersGiven: number
+  totalGiven: number
+  commentsReceived: number
+  quotesReceived: number
+  likesReceived: number
+  charactersReceived: number
+  totalReceived: number
+  total: number
+}[]
+
+const getCircles = async (ctx: AppContext, profile: any, interactions: Interactions, options: CirclesOptions) => {
+  let filtered_interactions = interactions;
+  if (options.only_mine) {
+    filtered_interactions = filtered_interactions.sort((a, b) => {
+      return (b.totalGiven as number) - (a.totalGiven as number);
+    });
+  }
+  if (options.remove_bots) {
+    filtered_interactions = filtered_interactions.filter(x => !DO_NOT_INCLUDE_THESE.includes(x.did as string))
+  }
+
   const layers = [8, 15];
   const config = [
-    {distance: 0, count: 1, radius: 110, users: [interactions.user]},
-    {distance: 200, count: layers[0], radius: 64, users: interactions.table.slice(0, 8)},
-    {distance: 330, count: layers[1], radius: 58, users: interactions.table.slice(8)},
+    {distance: 0, count: 1, radius: 110, users: [profile]},
+    {distance: 200, count: layers[0], radius: 64, users: filtered_interactions.slice(0, 8)},
+    {distance: 330, count: layers[1], radius: 58, users: filtered_interactions.slice(8)},
     // {distance: 450, count: layers[2], radius: 50, users: interactions.table.slice(8+15)}, // 26
   ]
 
@@ -43,14 +83,14 @@ const getCircles = async (ctx: AppContext, interactions: any, bg_color: string, 
   const cctx = canvas.getContext("2d");
 
   // fill the background
-  cctx.fillStyle = bg_color;
+  cctx.fillStyle = options.bg_color;
   cctx.fillRect(0, 0, width, height);
 
   // Date from and to
-  const textFrom = new Date(Date.now() - 7 * 24 * 3600 * 1000).toLocaleDateString(locale, { day: 'numeric', month: 'numeric' })
-  const textTo = new Date().toLocaleDateString(locale, { day: 'numeric', month: 'numeric' })
+  const textFrom = new Date(Date.now() - 7 * 24 * 3600 * 1000).toLocaleDateString(options.locale, { day: 'numeric', month: 'numeric' })
+  const textTo = new Date().toLocaleDateString(options.locale, { day: 'numeric', month: 'numeric' })
   const textFull = `${textFrom} - ${textTo}`
-  const textColor = hex_is_light(bg_color) ? '#000000' : '#CCCCCC';
+  const textColor = hex_is_light(options.bg_color) ? '#000000' : '#CCCCCC';
   cctx.font = '16px Garamond'
   cctx.fillStyle = textColor
   cctx.fillText(textFull, 10, 20)
@@ -90,7 +130,7 @@ const getCircles = async (ctx: AppContext, interactions: any, bg_color: string, 
 
       try {
         if (users[i].avatar) {
-          const img = await loadImage(users[i].avatar)
+          const img = await loadImage(users[i].avatar as string)
           cctx.drawImage(
             img,
             centerX - radius,
@@ -155,7 +195,7 @@ const getCircles = async (ctx: AppContext, interactions: any, bg_color: string, 
       cctx.restore();
     }
   }
-  console.log(`figure done: @${interactions.user.handle}`)
+  console.log(`figure done: @${profile.handle}`)
 
   return canvas
 }
@@ -173,29 +213,23 @@ const getProfile = async (ctx: AppContext, handle: string) => {
   .executeTakeFirst()
 }
 
-const getInteractions = async (ctx: AppContext, user: any, limit: number, timeCutoff: string) => {
+const getInteractionsData = async (ctx: AppContext, profile: any, limit: number, timeCutoff: string) => {
   const lastCircles = await ctx.db
   .selectFrom('circles')
   .select(['updatedAt', 'interactions'])
-  .where('did', '=', user.did)
+  .where('did', '=', profile.did)
   .executeTakeFirst()
 
   if (!!lastCircles && !!lastCircles.interactions && lastCircles.interactions.length > 0 && !!lastCircles.updatedAt && lastCircles.updatedAt > new Date(Date.now() - 6 * 3600 * 1000).toISOString()) {
-    return {user: user, table: lastCircles.interactions, updatedAt: lastCircles.updatedAt }
+    return {interactions: lastCircles.interactions, updatedAt: lastCircles.updatedAt }
   }
 
-  if (!!user) {
-      console.log(`Searching ${limit} interactions of ${user.did}: @${user.handle}`)
-
-      const DO_NOT_INCLUDE_THESE = [
-        user.did,
-        'did:plc:xxno7p4xtpkxtn4ok6prtlcb', // @lovefairy.nl
-      ]
-      
+  if (!!profile) {
+      console.log(`Searching ${limit} interactions of ${profile.did}: @${profile.handle}`)
       const queryTable = await ctx.db
       .with('commentsGivenTable', (db) => db
           .selectFrom('posts')
-          .where('author', '=', user.did)
+          .where('author', '=', profile.did)
           .where('indexedAt', '>', timeCutoff)
           .select([
               sql`SUBSTR(posts.replyParent, 6, 32)`.as('did'),
@@ -207,7 +241,7 @@ const getInteractions = async (ctx: AppContext, user: any, limit: number, timeCu
       )
       .with('commentsReceivedTable', (db) => db
           .selectFrom('posts')
-          .where('replyParent', 'like', `at://${user.did}%`)
+          .where('replyParent', 'like', `at://${profile.did}%`)
           .where('indexedAt', '>', timeCutoff)
           .select([
               sql`author`.as('did'),
@@ -219,7 +253,7 @@ const getInteractions = async (ctx: AppContext, user: any, limit: number, timeCu
       )
       .with('quotesGivenTable', (db) => db
           .selectFrom('posts')
-          .where('author', '=', user.did)
+          .where('author', '=', profile.did)
           .where('indexedAt', '>', timeCutoff)
           .select([
               sql`SUBSTR(posts.quoteUri, 6, 32)`.as('did'),
@@ -230,7 +264,7 @@ const getInteractions = async (ctx: AppContext, user: any, limit: number, timeCu
       )
       .with('quotesReceivedTable', (db) => db
           .selectFrom('posts')
-          .where('quoteUri', 'like', `at://${user.did}%`)
+          .where('quoteUri', 'like', `at://${profile.did}%`)
           .where('indexedAt', '>', timeCutoff)
           .select([
               sql`author`.as('did'),
@@ -241,7 +275,7 @@ const getInteractions = async (ctx: AppContext, user: any, limit: number, timeCu
       )
       .with('repostsGivenTable', (db) => db
           .selectFrom('reposts')
-          .where('uri', 'like', `at://${user.did}%`)
+          .where('uri', 'like', `at://${profile.did}%`)
           .where('indexedAt', '>', timeCutoff)
           .select([
               sql`SUBSTR(reposts.subjectUri, 6, 32)`.as('did'),
@@ -252,7 +286,7 @@ const getInteractions = async (ctx: AppContext, user: any, limit: number, timeCu
       )
       .with('repostsReceivedTable', (db) => db
           .selectFrom('reposts')
-          .where('subjectUri', 'like', `at://${user.did}%`)
+          .where('subjectUri', 'like', `at://${profile.did}%`)
           .where('indexedAt', '>', timeCutoff)
           .select([
               sql`SUBSTR(reposts.uri, 6, 32)`.as('did'),
@@ -263,7 +297,7 @@ const getInteractions = async (ctx: AppContext, user: any, limit: number, timeCu
       )
       .with('likesGivenTable', (db) => db
           .selectFrom('likes')
-          .where('uri', 'like', `at://${user.did}%`)
+          .where('uri', 'like', `at://${profile.did}%`)
           .where('indexedAt', '>', timeCutoff)
           .select([
               sql`SUBSTR(likes.subjectUri, 6, 32)`.as('did'),
@@ -274,7 +308,7 @@ const getInteractions = async (ctx: AppContext, user: any, limit: number, timeCu
       )
       .with('likesReceivedTable', (db) => db
           .selectFrom('likes')
-          .where('subjectUri', 'like', `at://${user.did}%`)
+          .where('subjectUri', 'like', `at://${profile.did}%`)
           .where('indexedAt', '>', timeCutoff)
           .select([
               sql`SUBSTR(likes.uri, 6, 32)`.as('did'),
@@ -311,7 +345,7 @@ const getInteractions = async (ctx: AppContext, user: any, limit: number, timeCu
           sql`(IFNULL(commentsReceived, 0) + IFNULL(quotesReceived, 0) + IFNULL(repostsReceived, 0) + IFNULL(likesReceived, 0))`.as('totalReceived'),
           sql`(IFNULL(commentsGiven, 0) + IFNULL(quotesGiven, 0) + IFNULL(repostsGiven, 0) + IFNULL(likesGiven, 0) + IFNULL(commentsReceived, 0) + IFNULL(quotesReceived, 0) + IFNULL(repostsReceived, 0) + IFNULL(likesReceived, 0))`.as('total')
       ])
-      .where('profiles.did', 'not in', DO_NOT_INCLUDE_THESE)
+      .where('profiles.did', '!=', profile.did)
       .groupBy([
           'profiles.did',
           'commentsGiven',
@@ -337,18 +371,18 @@ const getInteractions = async (ctx: AppContext, user: any, limit: number, timeCu
       .limit(limit)
       .execute()
 
-      console.log(`search done: @${user.handle}`)
+      console.log(`search done: @${profile.handle}`)
 
       await ctx.db
       .replaceInto('circles')
       .values({
-        did: user.did,
+        did: profile.did,
         interactions: JSON.stringify(queryTable),
         updatedAt: new Date().toISOString(),
       })
       .execute()
 
-      return {user: user, table: queryTable, updatedAt: new Date().toISOString() }
+      return {interactions: queryTable, updatedAt: new Date().toISOString() }
   }
   return undefined
 }
@@ -383,33 +417,50 @@ export default function (ctx: AppContext) {
   router.post('/interactions', interactionsLimit, async (req, res) => {
     const intType = maybeStr(req.body.submit) ?? undefined
     const handle = maybeStr(req.body.handle)?.replace(/^@/g, '').trim() ?? ''
-    //@ts-ignore
-    const locale = req.getLocale() ?? req.locale ?? 'en'
 
     if (!intType || handle.length === 0) {
       return res.render('interactions')
     }
     const timeCutoff = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString().slice(0, 10)
 
-    const user = await getProfile(ctx, handle)
-    if (!user) {
+    const profile = await getProfile(ctx, handle)
+    if (!profile) {
       return res.render('interactions', { handle: '', errorText: `User not found: "${handle}"`})
     }
 
     if (intType === 'Search') {  
-      const interactions = await getInteractions(ctx, user, 40, timeCutoff)
-      if (!!interactions) {
-        return res.render('interactions', { handle: handle, interactions: interactions })
+      const interactions_data = await getInteractionsData(ctx, profile, 40, timeCutoff)
+      const list_of_bots = DO_NOT_INCLUDE_THESE.map(did => (
+        `<a target='_blank' href="https://bsky.app/profile/${did}">
+          ${did}
+          <i class="bi bi-box-arrow-up-right"></i>
+         </a>
+        `
+      )).join('\n')
+      if (!!interactions_data) {
+        return res.render('interactions', { 
+          handle: handle, 
+          profile: profile, 
+          interactions: interactions_data.interactions,
+          updatedAt: interactions_data.updatedAt,
+          list_of_bots: list_of_bots 
+        })
       }
     }
 
     if (intType === 'Circles') {
-      const interactions = await getInteractions(ctx, user, 40, timeCutoff)
-      const bg_color = req.body.bg_color ?? '#000000';
-      const remove_bots = req.body.remove_bots ?? true;
+      const interactions_data = await getInteractionsData(ctx, profile, 40, timeCutoff)
 
-      if (!!interactions) {
-        const circlesImage = await getCircles(ctx, interactions, bg_color, locale)
+      const circlesOptions = {
+        bg_color: req.body.bg_color ?? '#000000',
+        only_mine: req.body.only_mine ?? false,
+        remove_bots: req.body.remove_bots ?? true,
+        //@ts-ignore
+        locale: req.getLocale() ?? req.locale ?? 'en'
+      }
+
+      if (!!interactions_data) {
+        const circlesImage = await getCircles(ctx, profile, interactions_data.interactions, circlesOptions)
         const imageBuffer = circlesImage.toBuffer("image/png")
         // await ctx.db
         // .updateTable('circles')
