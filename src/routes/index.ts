@@ -4,6 +4,8 @@ import { sql } from 'kysely'
 import { createCanvas, loadImage } from 'canvas'
 import rateLimit from 'express-rate-limit'  
 
+import * as dData from '../util/derived_data'
+
 const maybeStr = (val?: string | any) => {
   if (!val) return undefined
   return val
@@ -483,85 +485,24 @@ export default function (ctx: AppContext) {
 
   router.get('/update/:name/:value?', async (req, res) => {
     console.log(`request @ /update/${req.params.name}/${req.params.value} from ${req.ip}`)
-    if (req.ip !== '127.0.0.1') {
+    if (!['127.0.0.1', '::1'].includes(req.ip)) {
       res.end()
     }
     
     if (req.params.name === 'follows') {
-      const data = await ctx.db
-      .selectFrom('follows')
-      .innerJoin('profiles', 'subject', 'did')
-      .select([
-        'did',
-        'subject', 
-        'handle', 
-        'displayName',
-        'avatar',
-        sql`count(uri)`.as('count'), 
-        sql`max(follows.indexedAt)`.as('mostRecent')
-      ])
-      .groupBy('subject')
-      .where('follows.indexedAt', '>', new Date(Date.now() - 1 * 48 * 3600 * 1000).toISOString().substring(0, 10))
-      .orderBy('count', 'desc')
-      .limit(100)
-      .execute()
-
-      await ctx.db
-      .replaceInto('derived_data')
-      .values({
-        name: 'top_follows',
-        data: JSON.stringify(data),
-        updatedAt: new Date().toISOString()
-      })
-      .executeTakeFirst()
+      await dData.updateTopFollowed(ctx)
       res.send('done!')
     }
 
     if (req.params.name === 'blocks') {
-      const data = await ctx.db
-      .selectFrom('blocks')
-      .innerJoin('profiles', 'subject', 'did')
-      .select([
-        'did',
-        'subject', 
-        'handle', 
-        'displayName',
-        'avatar',
-        sql`count(uri)`.as('count'), 
-        sql`max(blocks.indexedAt)`.as('mostRecent')
-      ])
-      .groupBy('subject')
-      .where('blocks.indexedAt', '>', new Date(Date.now() - 1 * 48 * 3600 * 1000).toISOString().substring(0, 10))
-      .orderBy('count', 'desc')
-      .limit(25)
-      .execute()
-
-      await ctx.db
-      .replaceInto('derived_data')
-      .values({
-        name: 'top_blocks',
-        data: JSON.stringify(data),
-        updatedAt: new Date().toISOString()
-      })
-      .executeTakeFirst()
+      await dData.updateTopBlocked(ctx)
       res.send('done!')
     }
 
     if (req.params.name === 'profile') {
       if (!!req.params.value) {
-        const profile = await ctx.api.getProfile({ actor: req.params.value })
+        const profile = await dData.updateProfile(ctx, req.params.value)
         if (!!profile) {
-          await ctx.db
-          .updateTable('profiles')
-          .set({
-            handle: profile.data.handle,
-            displayName: profile.data.displayName,
-            avatar: profile.data.avatar ?? null,
-            description: profile.data.description ?? null,
-            updatedAt: new Date().toISOString(),
-          })
-          .where('did', '=', profile.data.did)
-          .execute()
           res.json(profile)
         } else {
           res.send('error getting profile')

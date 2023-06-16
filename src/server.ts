@@ -12,6 +12,8 @@ import cors from 'cors'
 import indexRoute from './routes/index'
 import feedsRoute from './routes/feeds'
 
+import scheduledTasks from './tasks'
+
 var favicon = require('serve-favicon')
 
 var i18n = require("i18n")
@@ -74,6 +76,8 @@ export class Wolfgang {
       standardHeaders: true,
       legacyHeaders: false, 
     }))
+
+    scheduledTasks(ctx)
 
     app.use('/static', express.static(path.join(__dirname, 'public')))
 
