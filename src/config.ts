@@ -1,5 +1,5 @@
 import { Database } from './db'
-import { BskyAgent } from "@atproto/api";
+import { BskyAgent } from '@atproto/api'
 
 export type AppContext = {
   db: Database

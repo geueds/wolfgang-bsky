@@ -1,6 +1,6 @@
 @media (min-width: 1200px) {
-  .container{
-      max-width: 850px;
+  .container {
+    max-width: 850px;
   }
 }
 
@@ -10,7 +10,7 @@ a {
 
 /* general styling */
 body {
-  font-family: "Open Sans", sans-serif;
+  font-family: 'Open Sans', sans-serif;
   font-size: 0.9em;
   line-height: 1.1;
 }

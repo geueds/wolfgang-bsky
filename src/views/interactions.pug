@@ -1,113 +1,108 @@
-doctype html
-html 
-    include head.pug
-    body 
-        include navbar.pug
-        div(class='container text-center mt-3')
-            h5= __('INTERACTIONS_WORD')
-            if !interactions && errorText 
-                div.row(class='justify-content-center mt-2'): p= errorText
+extends layout.pug 
 
-            form(id="form" action="/interactions" method="post")
-                div.row(class='align-items-center justify-content-center')
-                    div.col-sm-12.col-md-6
-                        div.input-group.input-group-sm
-                            span.input-group-text @
-                            input.form-control(id="handle" type="text" name="handle" value=handle placeholder=__('INTERACTIONS_SEARCH_INPUT'))
-                            button.btn.btn-outline-secondary(id="searchButton" type="submit" name="submit" onclick="this.form.submit(); this.disabled=true;" value="Search")= __('INTERACTIONS_SEARCH_BUTTON')
-                if !!interactions
-                    div.row.row-cols-auto(class='align-items-center justify-content-center mt-2')
-                        div.col
-                            div.input-group.input-group-sm
-                                span.input-group-text= __("INTERACTIONS_BACKGROUND_COLOR")
-                                input(type="color" name="bg_color" value="#1338BE" style="width: 40px;")
-                        div.col
-                            div.input-group.input-group-sm(data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="test")
-                                span.input-group-text= __("INTERACTIONS_CONFIG_REMOVE_BOTS")
-                                div.input-group-text: input.form-check-input(type="checkbox" id="remove_bots" name="remove_bots" checked)
-                                span.input-group-text
-                                    a(data-bs-container="body" data-bs-toggle="popover" data-bs-placement="right" data-bs-html="true" data-bs-title=__("INTERACTIONS_CONFIG_REMOVE_BOTS_TITLE") data-bs-content=list_of_bots)
-                                        i.bi.bi-info-circle-fill(style="font-size: 0.75rem;")
-                        div.col 
-                            div.input-group.input-group-sm
-                                span.input-group-text= __("INTERACTIONS_CONFIG_ONLY_MINE")
-                                div.input-group-text: input.form-check-input(type="checkbox" id="only_mine" name="only_mine")
-                        div.col 
-                            button.btn.btn-sm.btn-outline-secondary(type="submit" name="submit" value="Circles" formtarget="_blank")= __("INTERACTIONS_IMAGE_BUTTON")
+block content
+  div(class='container text-center mt-3')
+    h5= __('INTERACTIONS_WORD')
+    if !interactions && errorText 
+      div.row(class='justify-content-center mt-2'): p= errorText
 
-            if !!interactions
-                div(class='row align-items-center justify-content-center mt-2')
-                    div(class='col-auto')
-                        =__("INTERACTIONS_TABLE_TOP_TEXT", { handle : profile.handle})
-                div(class='row align-items-center justify-content-center mt-2')
-                    div(class='col-auto' style="font-size: 0.75rem;")
-                        = "(" + __("LAST_UPDATE") + ": " + new Date(updatedAt).toLocaleString(getLocale()) + ")"
-                div(class='row align-items-center justify-content-center mt-2')
-                    div(class='col-auto' style="font-size: 0.75rem;")
-                        = __("UPDATE_FREQUENCY_MSG")
-                div(class='row align-items-center justify-content-center mt-2')
-                    div(class='col-auto' style="font-size: 0.75rem;")
-                        i.bi.bi-hash
-                        = `${__("INTERACTIONS_TABLE_CHARACTERS")}`
-                    div(class='col-auto' style="font-size: 0.75rem;")
-                        i.bi.bi-chat-square-text-fill
-                        = ` ${__("INTERACTIONS_TABLE_REPLIES")}`
-                    div(class='col-auto' style="font-size: 0.75rem;")
-                        i.bi.bi-repeat
-                        = ` ${__("INTERACTIONS_TABLE_REPOSTS")}`
-                    div(class='col-auto' style="font-size: 0.75rem;")
-                        i.bi.bi-heart-fill
-                        = ` ${__("INTERACTIONS_TABLE_LIKES")}`
+    form(id="form" action="/interactions" method="post")
+      div.row(class='align-items-center justify-content-center')
+        div.col-sm-12.col-md-6
+          div.input-group.input-group-sm
+            span.input-group-text @
+            input.form-control(id="handle" type="text" name="handle" value=handle placeholder=__('INTERACTIONS_SEARCH_INPUT'))
+            button.btn.btn-outline-secondary(id="searchButton" type="submit" name="submit" onclick="this.form.submit(); this.disabled=true;" value="Search")= __('INTERACTIONS_SEARCH_BUTTON')
+      if !!interactions
+        div.row.row-cols-auto(class='align-items-center justify-content-center mt-2')
+          div.col
+            div.input-group.input-group-sm
+              span.input-group-text= __("INTERACTIONS_BACKGROUND_COLOR")
+              input(type="color" name="bg_color" value="#1338BE" style="width: 40px;")
+          div.col
+            div.input-group.input-group-sm(data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="test")
+              span.input-group-text= __("INTERACTIONS_CONFIG_REMOVE_BOTS")
+              div.input-group-text: input.form-check-input(type="checkbox" id="remove_bots" name="remove_bots" checked)
+              span.input-group-text
+                a(data-bs-container="body" data-bs-toggle="popover" data-bs-placement="right" data-bs-html="true" data-bs-title=__("INTERACTIONS_CONFIG_REMOVE_BOTS_TITLE") data-bs-content=list_of_bots)
+                  i.bi.bi-info-circle-fill(style="font-size: 0.75rem;")
+          div.col 
+            div.input-group.input-group-sm
+              span.input-group-text= __("INTERACTIONS_CONFIG_ONLY_MINE")
+              div.input-group-text: input.form-check-input(type="checkbox" id="only_mine" name="only_mine")
+          div.col 
+            button.btn.btn-sm.btn-outline-secondary(type="submit" name="submit" value="Circles" formtarget="_blank")= __("INTERACTIONS_IMAGE_BUTTON")
 
-            table(class="table table-striped table-hover table-sm mt-2")
-                thead
-                    tr(style='text-align: center; vertical-align: middle')
-                        th(width='30px' rowspan=2)
-                        th(rowspan=2 title=__("INTERACTIONS_TABLE_USER"))= __("INTERACTIONS_TABLE_USER") 
-                        th(colspan=2 title=__("INTERACTIONS_TABLE_CHARACTERS")): i.bi.bi-hash
-                        th(colspan=2 title=__("INTERACTIONS_TABLE_REPLIES")): i.bi.bi-chat-square-text-fill
-                        th(colspan=2 title=__("INTERACTIONS_TABLE_REPOSTS")): i.bi.bi-repeat
-                        th(colspan=2 title=__("INTERACTIONS_TABLE_LIKES")): i.bi.bi-heart-fill
-                        th(colspan=2 title="subtotal") subtotal
-                        th(rowspan=2 title=__("INTERACTIONS_TABLE_TOTAL"))= __("INTERACTIONS_TABLE_TOTAL")
-                    tr(style='text-align: center')
-                        th: i(class="bi bi-box-arrow-up" title=__("INTERACTIONS_TABLE_SENT"))
-                        th: i(class="bi bi-box-arrow-in-down" title=__("INTERACTIONS_TABLE_RECEIVED"))
-                        th: i(class="bi bi-box-arrow-up" title=__("INTERACTIONS_TABLE_SENT"))
-                        th: i(class="bi bi-box-arrow-in-down" title=__("INTERACTIONS_TABLE_RECEIVED"))
-                        th: i(class="bi bi-box-arrow-up" title=__("INTERACTIONS_TABLE_SENT"))
-                        th: i(class="bi bi-box-arrow-in-down" title=__("INTERACTIONS_TABLE_RECEIVED"))
-                        th: i(class="bi bi-box-arrow-up" title=__("INTERACTIONS_TABLE_SENT"))
-                        th: i(class="bi bi-box-arrow-in-down" title=__("INTERACTIONS_TABLE_RECEIVED"))
-                        th: i(class="bi bi-box-arrow-up" title=__("INTERACTIONS_TABLE_SENT"))
-                        th: i(class="bi bi-box-arrow-in-down" title=__("INTERACTIONS_TABLE_RECEIVED"))
+    if !!interactions
+      div(class='row align-items-center justify-content-center mt-2')
+        div(class='col-auto')
+          =__("INTERACTIONS_TABLE_TOP_TEXT", { handle : profile.handle})
+      div(class='row align-items-center justify-content-center mt-2')
+        div(class='col-auto' style="font-size: 0.75rem;")
+          = "(" + __("LAST_UPDATE") + ": " + new Date(updatedAt).toLocaleString(getLocale()) + ")"
+      div(class='row align-items-center justify-content-center mt-2')
+        div(class='col-auto' style="font-size: 0.75rem;")
+          = __("UPDATE_FREQUENCY_MSG")
+      div(class='row align-items-center justify-content-center mt-2')
+        div(class='col-auto' style="font-size: 0.75rem;")
+          i.bi.bi-hash
+          = `${__("INTERACTIONS_TABLE_CHARACTERS")}`
+        div(class='col-auto' style="font-size: 0.75rem;")
+          i.bi.bi-chat-square-text-fill
+          = ` ${__("INTERACTIONS_TABLE_REPLIES")}`
+        div(class='col-auto' style="font-size: 0.75rem;")
+          i.bi.bi-repeat
+          = ` ${__("INTERACTIONS_TABLE_REPOSTS")}`
+        div(class='col-auto' style="font-size: 0.75rem;")
+          i.bi.bi-heart-fill
+          = ` ${__("INTERACTIONS_TABLE_LIKES")}`
 
-                if !!interactions
-                    tbody
-                        each val, idx in interactions
-                            tr(style='text-align: center; vertical-align: middle')
-                                td= idx+1
-                                td(style='text-align: left')
-                                    div(class='text-left align-items-start' style="display: flex; align-items: center;")
-                                        div(style="width: 44px;")
-                                            if val.avatar
-                                                img(src=val.avatar, width='32px', height='32px', style='border-radius: 20%;')
-                                            else 
-                                                i(class="bi bi-person-square" style="font-size: 2rem")
-                                        div(style="word-wrap: break-word;")
-                                            div= val.displayName
-                                            a(href='https://bsky.app/profile/'+val.did style="font-size: 0.75rem") #{(val.handle.length > 0) ? `@${val.handle}` : val.subject}
-                                td= val.charactersGiven
-                                td= val.charactersReceived
-                                td= val.commentsGiven
-                                td= val.commentsReceived
-                                td= val.repostsGiven+val.quotesGiven
-                                td= val.repostsReceived+val.quotesReceived
-                                td= val.likesGiven
-                                td= val.likesReceived
-                                td= val.totalGiven
-                                td= val.totalReceived
-                                td= val.total
+    table(class="table table-striped table-hover table-sm mt-2")
+      thead
+        tr(style='text-align: center; vertical-align: middle')
+          th(width='30px' rowspan=2)
+          th(rowspan=2 title=__("INTERACTIONS_TABLE_USER"))= __("INTERACTIONS_TABLE_USER") 
+          th(colspan=2 title=__("INTERACTIONS_TABLE_CHARACTERS")): i.bi.bi-hash
+          th(colspan=2 title=__("INTERACTIONS_TABLE_REPLIES")): i.bi.bi-chat-square-text-fill
+          th(colspan=2 title=__("INTERACTIONS_TABLE_REPOSTS")): i.bi.bi-repeat
+          th(colspan=2 title=__("INTERACTIONS_TABLE_LIKES")): i.bi.bi-heart-fill
+          th(colspan=2 title="subtotal") subtotal
+          th(rowspan=2 title=__("INTERACTIONS_TABLE_TOTAL"))= __("INTERACTIONS_TABLE_TOTAL")
+        tr(style='text-align: center')
+          th: i(class="bi bi-box-arrow-up" title=__("INTERACTIONS_TABLE_SENT"))
+          th: i(class="bi bi-box-arrow-in-down" title=__("INTERACTIONS_TABLE_RECEIVED"))
+          th: i(class="bi bi-box-arrow-up" title=__("INTERACTIONS_TABLE_SENT"))
+          th: i(class="bi bi-box-arrow-in-down" title=__("INTERACTIONS_TABLE_RECEIVED"))
+          th: i(class="bi bi-box-arrow-up" title=__("INTERACTIONS_TABLE_SENT"))
+          th: i(class="bi bi-box-arrow-in-down" title=__("INTERACTIONS_TABLE_RECEIVED"))
+          th: i(class="bi bi-box-arrow-up" title=__("INTERACTIONS_TABLE_SENT"))
+          th: i(class="bi bi-box-arrow-in-down" title=__("INTERACTIONS_TABLE_RECEIVED"))
+          th: i(class="bi bi-box-arrow-up" title=__("INTERACTIONS_TABLE_SENT"))
+          th: i(class="bi bi-box-arrow-in-down" title=__("INTERACTIONS_TABLE_RECEIVED"))
 
-        script
-            include stuff.js
+      if !!interactions
+        tbody
+          each val, idx in interactions
+            tr(style='text-align: center; vertical-align: middle')
+              td= idx+1
+              td(style='text-align: left')
+                div(class='text-left align-items-start' style="display: flex; align-items: center;")
+                  div(style="width: 44px;")
+                    if val.avatar
+                      img(src=val.avatar, width='32px' height='32px' style='border-radius: 20%;')
+                    else 
+                      i(class="bi bi-person-square" style="font-size: 2rem")
+                  div(style="word-wrap: break-word;")
+                    div= val.displayName
+                    a(href='https://bsky.app/profile/'+val.did style="font-size: 0.75rem") #{(val.handle.length > 0) ? `@${val.handle}` : val.subject}
+              td= val.charactersGiven
+              td= val.charactersReceived
+              td= val.commentsGiven
+              td= val.commentsReceived
+              td= val.repostsGiven+val.quotesGiven
+              td= val.repostsReceived+val.quotesReceived
+              td= val.likesGiven
+              td= val.likesReceived
+              td= val.totalGiven
+              td= val.totalReceived
+              td= val.total
