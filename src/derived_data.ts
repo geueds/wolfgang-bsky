@@ -7,6 +7,7 @@ export async function updateLickablePosts(ctx: AppContext) {
   .innerJoin('profiles', 'profiles.did', 'posts.author')
   .select([
     'uri',
+    'cid',
     'author',
     'handle',
     'posts.languages',
@@ -14,14 +15,14 @@ export async function updateLickablePosts(ctx: AppContext) {
     'posts.indexedAt'
   ])
   .where('author', 'in', ctx.followers.map(x => x.author))
-  .where('posts.indexedAt', '<', new Date(Date.now() - 1*15*60*1000).toISOString())
-  .where('posts.indexedAt', '>', new Date(Date.now() - 3*60*60*1000).toISOString())
+  .where('posts.indexedAt', '<', new Date(Date.now() - 1*30*60*1000).toISOString())
+  .where('posts.indexedAt', '>', new Date(Date.now() - 2*60*60*1000).toISOString())
   .where('replyRoot', 'is', null)
   .where('posts.languages', 'is not', null)
   .orderBy('posts.indexedAt', 'desc')
   .execute()
 
-  const ptbrPosts = posts
+  const availablePosts = posts
   .filter(post => {
     return Object.entries(post.languages)
     .map(x => ({lang: x[0], prob: x[1]}))
@@ -30,11 +31,35 @@ export async function updateLickablePosts(ctx: AppContext) {
     .filter(x => x.lang === 'portuguese')
     .length > 0
   })
-  .filter(post => post.points as number > 6 && post.points as number < 25)
+  .filter(post => post.points as number >= 6 && post.points as number <= 20)
 
-  ptbrPosts.forEach(post => {
-    console.log(`${post.points} ${new Date(post.indexedAt).toLocaleTimeString()} ${post.handle} https://bsky.app/profile/${post.author}/post/${post.uri.split('/').slice(-1)}`)
-  })
+  const dbOverlap = await ctx.db
+  .selectFrom('licks')
+  .select('uri')
+  .where('uri', 'in', availablePosts.map(x => x.uri))
+  .execute()
+
+  const toRepost = availablePosts.filter(x => !dbOverlap.map(y => y.uri).includes(x.uri))
+
+  if (toRepost.length > 0) {
+    await ctx.db
+    .insertInto('licks')
+    .values(toRepost.map(x => ({
+      uri: x.uri,
+      author: x.author,
+      indexedAt: new Date().toISOString()
+    })))
+    .execute()
+  }
+
+  for (const post of toRepost) {
+    ctx.log(`reposting: ${new Date(post.indexedAt).toLocaleTimeString()} ${post.handle} ${post.points}p https://bsky.app/profile/${post.author}/post/${post.uri.split('/').slice(-1)}`)
+    try {
+      await ctx.api.repost(post.uri, post.cid)
+    } catch(e) {
+      ctx.log(`ERROR reposting: ${post.handle} ${post.points}p ${post.uri}`)
+    }
+  }
 }
 
 export async function updateLickablePeople(ctx: AppContext) {
