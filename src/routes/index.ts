@@ -220,7 +220,7 @@ const getInteractionsData = async (ctx: AppContext, profile: any, limit: number,
   .where('did', '=', profile.did)
   .executeTakeFirst()
 
-  if (!!lastCircles && !!lastCircles.interactions && lastCircles.interactions.length > 0 && !!lastCircles.updatedAt && lastCircles.updatedAt > new Date(Date.now() - 6 * 3600 * 1000).toISOString()) {
+  if (!!lastCircles && !!lastCircles.interactions && lastCircles.interactions.length > 0 && !!lastCircles.updatedAt && lastCircles.updatedAt > new Date(Date.now() - 2 * 3600 * 1000).toISOString()) {
     ctx.log(`Found current interactions of ${profile.did}: @${profile.handle}`)
     return {interactions: lastCircles.interactions, updatedAt: lastCircles.updatedAt }
   }
