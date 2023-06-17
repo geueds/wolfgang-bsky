@@ -53,11 +53,11 @@ export async function updateLickablePosts(ctx: AppContext) {
   }
 
   for (const post of toRepost) {
-    ctx.log(`reposting: ${new Date(post.indexedAt).toLocaleTimeString()} ${post.handle} ${post.points}p https://bsky.app/profile/${post.author}/post/${post.uri.split('/').slice(-1)}`)
+    ctx.log(`[wolfgang] reposting: ${new Date(post.indexedAt).toLocaleTimeString()} ${post.handle} ${post.points}p https://bsky.app/profile/${post.author}/post/${post.uri.split('/').slice(-1)}`)
     try {
       await ctx.api.repost(post.uri, post.cid)
     } catch(e) {
-      ctx.log(`ERROR reposting: ${post.handle} ${post.points}p ${post.uri}`)
+      ctx.log(`[wolfgang] error reposting: ${post.handle} ${post.points}p ${post.uri}`)
     }
   }
 }
@@ -86,13 +86,13 @@ export async function updateLickablePeople(ctx: AppContext) {
   const top_blocked = query?.data.map(x => x.did)
 
   follows.filter(x => !followers.map(q => q.author).includes(x.subject)).forEach(follow => {
-    ctx.log(`[followers] unfollowing: ${follow.handle} [${follow.subject}]`)
+    ctx.log(`[wolfgang] unfollowing: ${follow.handle} [${follow.subject}]`)
     ctx.api.deleteFollow(follow.uri)
   })
 
   followers.filter(x => !follows.map(q => q.subject).includes(x.author)).forEach(follower => {
     if (!top_blocked.includes(follower.author)) {
-      ctx.log(`[followers] following: ${follower.handle} [${follower.author}]`)
+      ctx.log(`[wolfgang] following: ${follower.handle} [${follower.author}]`)
       ctx.api.follow(follower.author)
     }
   })

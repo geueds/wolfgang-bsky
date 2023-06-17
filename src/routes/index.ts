@@ -171,7 +171,7 @@ const getCircles = async (ctx: AppContext, profile: any, interactions: Interacti
               radius * 2,
               radius * 2
             );
-            ctx.log(`Error: ${e.message} - updated avatar`)
+            ctx.log(`[interactions] ERROR: ${e.message} - updated avatar`)
           } else {
             const img = await loadImage(defaultAvatarUrl)
             cctx.drawImage(
@@ -182,7 +182,7 @@ const getCircles = async (ctx: AppContext, profile: any, interactions: Interacti
           }
         }
         catch (e2: any) {
-          ctx.log(`Final error: ${e2.message} - using default`)
+          ctx.log(`[interactions] ERROR: ${e2.message} - using default`)
           const img = await loadImage(defaultAvatarUrl)
           cctx.drawImage(
             img,
@@ -195,7 +195,7 @@ const getCircles = async (ctx: AppContext, profile: any, interactions: Interacti
       cctx.restore();
     }
   }
-  ctx.log(`figure done: @${profile.handle}`)
+  ctx.log(`[interactions] figure done: @${profile.handle}`)
 
   return canvas
 }
@@ -221,12 +221,12 @@ const getInteractionsData = async (ctx: AppContext, profile: any, limit: number,
   .executeTakeFirst()
 
   if (!!lastCircles && !!lastCircles.interactions && lastCircles.interactions.length > 0 && !!lastCircles.updatedAt && lastCircles.updatedAt > new Date(Date.now() - 2 * 3600 * 1000).toISOString()) {
-    ctx.log(`Found current interactions of ${profile.did}: @${profile.handle}`)
+    ctx.log(`[interactions] Found current interactions of ${profile.did}: @${profile.handle}`)
     return {interactions: lastCircles.interactions, updatedAt: lastCircles.updatedAt }
   }
 
   if (!!profile) {
-      ctx.log(`Searching ${limit} interactions of ${profile.did}: @${profile.handle}`)
+      ctx.log(`[interactions] Searching ${limit} interactions of ${profile.did}: @${profile.handle}`)
       const queryTable = await ctx.db
       .with('commentsGivenTable', (db) => db
           .selectFrom('posts')
@@ -372,7 +372,7 @@ const getInteractionsData = async (ctx: AppContext, profile: any, limit: number,
       .limit(limit)
       .execute()
 
-      ctx.log(`search done: @${profile.handle}`)
+      ctx.log(`[interactions] search done: @${profile.handle}`)
 
       await ctx.db
       .replaceInto('circles')
@@ -536,7 +536,7 @@ export default function (ctx: AppContext) {
   // })
 
   router.get('/update/:name/:value?', async (req, res) => {
-    ctx.log(`request @ /update/${req.params.name}/${req.params.value} from ${req.ip}`)
+    ctx.log(`[data] request @ /update/${req.params.name}/${req.params.value} from ${req.ip}`)
     if (!['127.0.0.1', '::1'].includes(req.ip)) {
       res.end()
     }
