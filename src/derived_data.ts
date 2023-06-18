@@ -45,7 +45,7 @@ export async function updateLickablePosts(ctx: AppContext) {
       )
     })
     .filter(
-      (post) => (post.points as number) >= 6 && (post.points as number) <= 20,
+      (post) => (post.points as number) >= 12 && (post.points as number) <= 20,
     )
 
   const dbOverlap = await ctx.db
