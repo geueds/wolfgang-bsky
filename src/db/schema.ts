@@ -9,6 +9,7 @@ export type DatabaseSchema = {
   licks: Lick
   circles: Circle
   derived_data: DerivedData
+  wolfgang_sub_state: SubState
 }
 
 export type DerivedData = {
@@ -45,8 +46,7 @@ export type Post = {
   replyParent: string | null
   replyRoot: string | null
   quoteUri: string | null
-  keywords: string | null
-  languages: Languages
+  languages: Languages | null
   hasImages: number
   textLength: number | null
   comments: number | null

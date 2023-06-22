@@ -37,7 +37,7 @@ export async function updateLickablePosts(ctx: AppContext) {
   const availablePosts = posts
     .filter((post) => {
       return (
-        Object.entries(post.languages)
+        Object.entries(post.languages ?? [])
           .map((x) => ({ lang: x[0], prob: x[1] }))
           .sort((a, b) => (b.prob > a.prob ? 1 : -1))
           .slice(0, 5)

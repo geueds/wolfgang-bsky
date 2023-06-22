@@ -15,6 +15,8 @@ const run = async () => {
     mysqlPort: maybeInt(process.env.WOLFGANG_MYSQL_PORT) ?? 3306,
     mysqlUser: maybeStr(process.env.WOLFGANG_MYSQL_USER) ?? '',
     mysqlPassword: maybeStr(process.env.WOLFGANG_MYSQL_PASSWORD) ?? '',
+    subscriptionReconnectDelay:
+      maybeInt(process.env.WOLFGANG_SUBSCRIPTION_RECONNECT_DELAY) ?? 3000,
     subscriptionEndpoint:
       maybeStr(process.env.WOLFGANG_SUBSCRIPTION_ENDPOINT) ??
       'wss://bsky.social',

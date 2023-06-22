@@ -24,4 +24,5 @@ export type Config = {
   mysqlUser: string
   mysqlPassword: string
   subscriptionEndpoint: string
+  subscriptionReconnectDelay: number
 }

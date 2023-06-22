@@ -3,6 +3,12 @@ import { AppContext } from '../config'
 import { sql } from 'kysely'
 import { createCanvas, loadImage } from 'canvas'
 import rateLimit from 'express-rate-limit'
+import { 
+  AppBskyEmbedImages, 
+  AppBskyEmbedRecordWithMedia, 
+  AppBskyEmbedRecord,
+  AppBskyFeedPost,
+} from '@atproto/api'
 
 import * as dData from '../derived_data'
 
@@ -252,6 +258,7 @@ const getInteractionsData = async (
   }
 
   if (!!profile) {
+    await syncPosts(ctx, profile.did)
     ctx.log(
       `[interactions] Searching ${limit} interactions of ${profile.did}: @${profile.handle}`,
     )
@@ -442,6 +449,85 @@ const getInteractionsData = async (
 }
 
 const toRad = (x: number) => x * (Math.PI / 180)
+
+async function getAllPosts(ctx: AppContext, repo: string) {
+  let cursor: any = ''
+  let currit: number = 0
+  let list: any[] = []
+  do {
+    currit++
+    const response = await ctx.api.com.atproto.repo.listRecords({
+      repo: repo,
+      collection: 'app.bsky.feed.post',
+      limit: 100,
+      cursor: cursor,
+    })
+    if (response.success && response.data.records.length > 0) {
+      list = list.concat(response.data.records)
+      if (response.data.records.length < 100) {
+        cursor = null
+      } else {
+        cursor = response.data.cursor
+      }
+    } else {
+      cursor = null
+    }
+  } while (cursor !== null && currit < 5)
+  return list
+}
+
+async function syncPosts(ctx: AppContext, repo: string) {
+  const posts = await getAllPosts(ctx, repo)
+
+  const postsToUpdate = posts.map(post => {
+    let hasImages = 0;
+    let quoteUri : string | null = null;
+
+    if (AppBskyFeedPost.isRecord(post.value)) {
+      // post with images
+      if (AppBskyEmbedImages.isMain(post.value.embed)) {
+        hasImages = post.value.embed.images.length
+      }
+
+      // text-only post quoting a post
+      if (AppBskyEmbedRecord.isMain(post.value.embed)) {
+        quoteUri = post.value.embed.record.uri
+      }
+      
+      // post with media quoting a post
+      if (AppBskyEmbedRecordWithMedia.isMain(post.value.embed)) {
+        if (AppBskyEmbedRecord.isMain(post.value.embed.record)) {
+          quoteUri = post.value.embed.record.record.uri
+        }
+        if (AppBskyEmbedImages.isMain(post.value.embed.media)) {
+          hasImages = post.value.embed.media.images.length
+        }
+      }
+    }
+
+    return {
+      uri: post.uri,
+      cid: post.cid,
+      author: post.uri.split('/')[2],
+      replyParent: post.value?.reply?.parent.uri ?? null,
+      replyRoot: post.value?.reply?.root.uri ?? null,
+      quoteUri: quoteUri ?? null,
+      hasImages: hasImages,
+      textLength: post.value?.text.length,
+      indexedAt: post.value?.createdAt,
+    }
+
+  })
+
+  if (postsToUpdate.length > 0) {
+    for (const post of postsToUpdate) {
+      await ctx.db
+      .replaceInto('posts')
+      .values(post)
+      .execute()
+    }
+  }
+}
 
 export default function (ctx: AppContext) {
   const router = express.Router()
