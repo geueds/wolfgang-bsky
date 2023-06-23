@@ -258,7 +258,6 @@ const getInteractionsData = async (
   }
 
   if (!!profile) {
-    await syncPosts(ctx, profile.did)
     ctx.log(
       `[interactions] Searching ${limit} interactions of ${profile.did}: @${profile.handle}`,
     )
