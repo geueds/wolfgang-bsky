@@ -1,36 +1,5 @@
 import { AppContext } from './config'
-import { BlobRef } from '@atproto/lexicon'
-import { ids, lexicons } from './lexicon/lexicons'
-import { Record as FollowRecord } from './lexicon/types/app/bsky/graph/follow'
-
-export const isFollow = (obj: unknown): obj is FollowRecord => {
-  return isType(obj, ids.AppBskyGraphFollow)
-}
-
-const isType = (obj: unknown, nsid: string) => {
-  try {
-    lexicons.assertValidRecord(nsid, fixBlobRefs(obj))
-    return true
-  } catch (err) {
-    return false
-  }
-}
-
-const fixBlobRefs = (obj: unknown): unknown => {
-  if (Array.isArray(obj)) {
-    return obj.map(fixBlobRefs)
-  }
-  if (obj && typeof obj === 'object') {
-    if (obj.constructor.name === 'BlobRef') {
-      const blob = obj as BlobRef
-      return new BlobRef(blob.ref, blob.mimeType, blob.size, blob.original)
-    }
-    return Object.entries(obj).reduce((acc, [key, val]) => {
-      return Object.assign(acc, { [key]: fixBlobRefs(val) })
-    }, {} as Record<string, unknown>)
-  }
-  return obj
-}
+import { isFollow } from './util/subscription'
 
 async function getAllFollowers(ctx: AppContext, repo: string) {
   let cursor: any = ''
