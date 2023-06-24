@@ -70,6 +70,7 @@ export default function (ctx: AppContext) {
   })
 
   router.post('/follows', async (req, res) => {
+    const timeStart = Date.now()
     const intType = maybeStr(req.body.submit) ?? undefined
     const handle = maybeStr(req.body.handle)?.replace(/^@/g, '').trim() ?? ''
 
@@ -92,19 +93,16 @@ export default function (ctx: AppContext) {
         return res.render('follows', { handle: handle, errorText: `User not found: @${handle}`})
     }
 
-    ctx.log(`Searching follows of @${profile.data.handle} [${profile.data.did}]`)
-
     const db_follows_query = await ctx.db
     .selectFrom('follows')
     .select(sql`count(uri)`.as('count'))
     .where('author', '=', profile.data.did)
     .executeTakeFirst()
-
     if (!db_follows_query) return res.end()
 
     const query_count = db_follows_query.count as number
     const profile_count = profile.data.followsCount as number
-    ctx.log(`${profile_count} ${query_count}`)
+
     if ((profile_count - query_count) > 10) {
         ctx.log(`Updating follows of @${handle}`)
         const follows = await getAllFollows(ctx, profile.data.did)
@@ -121,8 +119,8 @@ export default function (ctx: AppContext) {
             )
             .execute()
     }
-
     const query = await getFollowsQuery(ctx, profile.data.did)
+    ctx.log(`Searched follows of @${profile.data.handle} [${profile.data.did}] [${profile_count} ${query_count}] [${(Date.now() - timeStart) / 1000}s]`)
     return res.render('follows', { handle: handle, profile: db_profile, query: query })
   })
   return router
