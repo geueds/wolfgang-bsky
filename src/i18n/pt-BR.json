@@ -27,5 +27,12 @@
   "TABLE_USER": "usuário",
   "TABLE_FOLLOWS": "quantidade",
   "TABLE_BLOCKS": "quantidade",
-  "TABLE_MOSTRECENT": "mais recente"
+  "TABLE_MOSTRECENT": "mais recente",
+
+  "FOLLOWS": "Seguidores",
+  "FOLLOWS_TABLE_TOP_TEXT": "Seguidores de @{{handle}}",
+  "FOLLOWS_TABLE_TEXT": "Os dados da última coluna estão incompletos, se estiver vazio não quer necessariamente dizer que a pessoa não te segue",
+  "FOLLOWS_LAST_UPDATE": "atividade recente",
+  "FOLLOWS_INDEXED_FOLLOW": "segui em",
+  "FOLLOWS_INDEXED_FOLLOWING": "seguiu em"
 }

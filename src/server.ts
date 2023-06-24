@@ -8,6 +8,7 @@ import rateLimit from 'express-rate-limit'
 
 import path from 'path'
 import indexRoute from './routes/index'
+import followsRoute from './routes/follows'
 
 import scheduledTasks from './tasks'
 import * as dData from './derived_data'
@@ -92,6 +93,7 @@ export class Wolfgang {
     app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')))
     app.use(i18n.init)
     app.use(indexRoute(ctx))
+    app.use(followsRoute(ctx))
 
     return new Wolfgang(app, db, cfg, api)
   }

@@ -1,0 +1,54 @@
+extends layout.pug 
+
+block content
+  div(class='container text-center mt-3')
+    h5= __('FOLLOWS')
+    if !query && errorText 
+      div.row(class='justify-content-center mt-2'): p= errorText
+
+    form(id="form" action="/follows" method="post")
+      div.row(class='align-items-center justify-content-center')
+        div.col-sm-12.col-md-6
+          div.input-group.input-group-sm
+            span.input-group-text @
+            input.form-control(id="handle" type="text" name="handle" value=handle placeholder=__('INTERACTIONS_SEARCH_INPUT'))
+            button.btn.btn-outline-secondary(id="searchButton" type="submit" name="submit" onclick="this.form.submit(); this.disabled=true;" value="Search")= __('INTERACTIONS_SEARCH_BUTTON')
+
+    if !!query
+      div(class='row align-items-center justify-content-center mt-2')
+        div(class='col-auto')
+          =__("FOLLOWS_TABLE_TOP_TEXT", { handle : profile.handle})
+      div(class='row align-items-center justify-content-center mt-3')
+        div(class='col-9')
+          p(style='font-size: 1.2rem')=__("FOLLOWS_TABLE_TEXT")
+
+    table(class="table table-striped table-hover table-sm mt-2 sortable")
+      thead
+        tr(style='text-align: center; vertical-align: middle')
+          th(width='30px') #
+          th(title=__('TABLE_USER'))= __('TABLE_USER') 
+          th(title=__('FOLLOWS_LAST_UPDATE'))= __('FOLLOWS_LAST_UPDATE')
+          th(title=__('FOLLOWS_INDEXED_FOLLOW'))= __('FOLLOWS_INDEXED_FOLLOW')
+          th(title=__('FOLLOWS_INDEXED_FOLLOWING'))= __('FOLLOWS_INDEXED_FOLLOWING')
+
+      if !!query
+        tbody
+          each val, idx in query
+            tr(style='text-align: center; vertical-align: middle')
+              td= idx+1
+              td(style='text-align: left')
+                div(class='text-left align-items-start' style="display: flex; align-items: center;")
+                  div(style="width: 44px;")
+                    if val.avatar
+                      img(src=val.avatar, width='32px' height='32px' style='border-radius: 20%;')
+                    else 
+                      i(class="bi bi-person-square" style="font-size: 2rem")
+                  div(style="word-wrap: break-word;")
+                    div= val.displayName
+                    a(href='https://bsky.app/profile/'+val.did style="font-size: 0.75rem") #{(val.handle.length > 0) ? `@${val.handle}` : val.subject}
+              - var updatedAt = new Date(val.updatedAt).toISOString()
+              - var indexedFollowAt = new Date(val.indexedFollowAt).toISOString()
+              - var indexedFollowingAt = new Date(val.indexedFollowingAt).toISOString()
+              td(sorttable_customkey=updatedAt)= new Date(val.updatedAt).toLocaleString(getLocale())
+              td(sorttable_customkey=indexedFollowAt)= new Date(val.indexedFollowAt).toLocaleString(getLocale())
+              td(sorttable_customkey=indexedFollowingAt)= val.indexedFollowingAt ? new Date(val.indexedFollowingAt).toLocaleString(getLocale()) : ''

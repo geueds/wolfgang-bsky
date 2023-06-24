@@ -27,5 +27,12 @@
   "TABLE_USER": "user",
   "TABLE_FOLLOWS": "count",
   "TABLE_BLOCKS": "count",
-  "TABLE_MOSTRECENT": "most recent"
+  "TABLE_MOSTRECENT": "most recent",
+
+  "FOLLOWS": "Follows",
+  "FOLLOWS_TABLE_TOP_TEXT": "Follows of @{{handle}}",
+  "FOLLOWS_TABLE_TEXT": "The data in the last column is incomplete, if it is empty it does not necessarily mean that that person does not follow you",
+  "FOLLOWS_LAST_UPDATE": "recent activity",
+  "FOLLOWS_INDEXED_FOLLOW": "followed at",
+  "FOLLOWS_INDEXED_FOLLOWING": "followed by at"
 }
