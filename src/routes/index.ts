@@ -36,6 +36,7 @@ function hex_is_light(color: string) {
 const DO_NOT_INCLUDE_THESE = [
   'did:plc:xxno7p4xtpkxtn4ok6prtlcb', // @lovefairy.nl
   'did:plc:db645kt5coo7teuoxdjhq34x', // @blueskybaddies.bsky.social
+  'did:plc:y4rd5hesgwwbkblvkkidfs73', // @wolfgang
 ]
 
 type CirclesOptions = {
@@ -214,7 +215,7 @@ const getCircles = async (
   return canvas
 }
 
-const getProfile = async (ctx: AppContext, handle: string) => {
+export const getProfile = async (ctx: AppContext, handle: string) => {
   return await ctx.db
     .selectFrom('profiles')
     .select(['did', 'handle', 'displayName', 'avatar'])
