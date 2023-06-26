@@ -104,7 +104,7 @@ export default function (ctx: AppContext) {
     const profile_count = profile.data.followsCount as number
 
     if ((profile_count - query_count) > 10) {
-        ctx.log(`Updating follows of @${handle}`)
+        ctx.log(`[follows] Updating follows of @${handle}`)
         const follows = await getAllFollows(ctx, profile.data.did)
         await ctx.db
             .replaceInto('follows')
@@ -120,7 +120,7 @@ export default function (ctx: AppContext) {
             .execute()
     }
     const query = await getFollowsQuery(ctx, profile.data.did)
-    ctx.log(`Searched follows of @${profile.data.handle} [${profile.data.did}] [${profile_count} ${query_count}] [${(Date.now() - timeStart) / 1000}s]`)
+    ctx.log(`[follows] Searched follows of @${profile.data.handle} [${profile.data.did}] [${profile_count} ${query_count}] [${(Date.now() - timeStart) / 1000}s]`)
     return res.render('follows', { handle: handle, profile: db_profile, query: query })
   })
   return router
