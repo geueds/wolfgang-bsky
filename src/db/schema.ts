@@ -34,9 +34,9 @@ export type Profile = {
   displayName: string | null
   avatar: string | null
   description: string | null
-  languages: Languages
   indexedAt: string
   updatedAt: string | null
+  lastActivity: string | null
 }
 
 export type Post = {
