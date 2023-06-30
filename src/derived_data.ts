@@ -217,6 +217,9 @@ export async function updateTopPosters(ctx: AppContext) {
       'displayName',
       'avatar',
       sql`count(uri)`.as('post_count'),
+      sql`sum(comments)`.as('comments_count'),
+      sql`sum(reposts)`.as('reposts_count'),
+      sql`sum(likes)`.as('likes_count'),
     ])
     .where(
       'posts.indexedAt',

@@ -13,12 +13,26 @@ block content
       div(class='row align-items-center justify-content-center mt-2')
         div(class='col-auto' style="font-size: 0.75rem;")
           = "(" + __("LAST_UPDATE") + ": " + new Date(query.updatedAt).toLocaleString(getLocale()) + ")"
+      div(class='row align-items-center justify-content-center mt-2')
+        div(class='col-auto' style="font-size: 0.75rem;")
+          i.bi.bi-chat-square-text-fill
+          = ` ${__("INTERACTIONS_TABLE_REPLIES")}`
+        div(class='col-auto' style="font-size: 0.75rem;")
+          i.bi.bi-repeat
+          = ` ${__("INTERACTIONS_TABLE_REPOSTS")}`
+        div(class='col-auto' style="font-size: 0.75rem;")
+          i.bi.bi-heart-fill
+          = ` ${__("INTERACTIONS_TABLE_LIKES")}`
+
     table.table.table-striped.table-hover.table-sm(class="mt-2")
       thead
         tr(style='text-align: center; vertical-align: middle')
           th #
           th(title=__('TABLE_USER'))= __('TABLE_USER') 
           th(title=__('TABLE_COUNT'))= __('TABLE_COUNT')
+          th(title=__("INTERACTIONS_TABLE_REPLIES")): i.bi.bi-chat-square-text-fill
+          th(title=__("INTERACTIONS_TABLE_REPOSTS")): i.bi.bi-repeat
+          th(title=__("INTERACTIONS_TABLE_LIKES")): i.bi.bi-heart-fill
 
       if !!query && query.data
         tbody
@@ -36,3 +50,6 @@ block content
                     div= val.displayName
                     a(href='https://bsky.app/profile/'+val.did style="font-size: 0.75rem") #{(val.handle.length > 0) ? `@${val.handle}` : val.subject}
               td(style='text-align:center')= val.post_count
+              td(style='text-align:center')= val.comments_count
+              td(style='text-align:center')= val.reposts_count
+              td(style='text-align:center')= val.likes_count
