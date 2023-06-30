@@ -207,6 +207,39 @@ export async function updateTopBlocked(ctx: AppContext) {
     .executeTakeFirst()
 }
 
+export async function updateTopPosters(ctx: AppContext) {
+  const data = await ctx.db
+    .selectFrom('posts')
+    .innerJoin('profiles', 'profiles.did', 'posts.author')
+    .select([
+      'did',
+      'handle',
+      'displayName',
+      'avatar',
+      sql`count(uri)`.as('post_count'),
+    ])
+    .where(
+      'posts.indexedAt',
+      '>',
+      new Date(Date.now() - 1 * 48 * 3600 * 1000)
+        .toISOString()
+        .substring(0, 10),
+    )
+    .groupBy('author')
+    .orderBy('post_count', 'desc')
+    .limit(300)
+    .execute()
+
+  await ctx.db
+    .replaceInto('derived_data')
+    .values({
+      name: 'top_posters',
+      data: JSON.stringify(data),
+      updatedAt: new Date().toISOString(),
+    })
+    .execute()
+}
+
 export async function updateProfile(ctx: AppContext, actor: string) {
   const profile = await ctx.api.getProfile({ actor: actor })
   if (!!profile) {

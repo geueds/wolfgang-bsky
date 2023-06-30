@@ -106,6 +106,16 @@ export default function (ctx: AppContext) {
     res.end()
   })
 
+  router.get('/top_posters', async (req, res) => {
+    const query = await ctx.db
+      .selectFrom('derived_data')
+      .select(['data', 'updatedAt'])
+      .where('name', '=', 'top_posters')
+      .executeTakeFirst()
+
+    return res.render('topPosters', { query: query })
+  })
+
   router.get('/top_followed', async (req, res) => {
     const query = await ctx.db
       .selectFrom('derived_data')

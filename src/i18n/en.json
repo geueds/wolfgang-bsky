@@ -22,11 +22,12 @@
 
   "TOP_BLOCKED": "Top blocked",
   "TOP_FOLLOWED": "Top followed",
+  "TOP_POSTERS": "Top posters",
   "TOP_FOLLOWED_TABLE_TOP_TEXT": "The most followed users in the last 48 hours",
   "TOP_BLOCKED_TABLE_TOP_TEXT": "The most blocked users in the last 48 hours",
+  "TOP_POSTERS_TABLE_TOP_TEXT": "The users that posted the most in the last 48 hours",
   "TABLE_USER": "user",
-  "TABLE_FOLLOWS": "count",
-  "TABLE_BLOCKS": "count",
+  "TABLE_COUNT": "count",
   "TABLE_MOSTRECENT": "most recent",
 
   "FOLLOWS": "Follows",

@@ -105,6 +105,14 @@ const scheduledTasks = async (ctx: AppContext) => {
     )
   })
 
+  cron.schedule('0 */6 * * *', async () => {
+    const timeStart = Date.now()
+    await dData.updateTopPosters(ctx)
+    ctx.log(
+      `[data] Updated top posters in ${(Date.now() - timeStart) / 1000}s`,
+    )
+  })
+
   cron.schedule('*/10 * * * * ', async () => {
     const timeStartA = Date.now()
     ctx.followers = await dData.updateLickablePeople(ctx)

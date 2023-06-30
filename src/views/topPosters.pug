@@ -2,14 +2,14 @@ extends layout.pug
 
 block content
   div(class='container text-center mt-3')
-    h5= __('TOP_FOLLOWED')
+    h5= __('TOP_POSTERS')
     if !query
       div.row(class='justify-content-center mt-2') Error
 
     if !!query && query.data
       div(class='row align-items-center justify-content-center mt-2')
         div(class='col-auto')
-          =__("TOP_FOLLOWED_TABLE_TOP_TEXT", { lastUpdate : new Date(query.updatedAt).toLocaleDateString()})
+          =__("TOP_POSTERS_TABLE_TOP_TEXT", { lastUpdate : new Date(query.updatedAt).toLocaleDateString()})
       div(class='row align-items-center justify-content-center mt-2')
         div(class='col-auto' style="font-size: 0.75rem;")
           = "(" + __("LAST_UPDATE") + ": " + new Date(query.updatedAt).toLocaleString(getLocale()) + ")"
@@ -35,4 +35,4 @@ block content
                   div(style="word-wrap: break-word;")
                     div= val.displayName
                     a(href='https://bsky.app/profile/'+val.did style="font-size: 0.75rem") #{(val.handle.length > 0) ? `@${val.handle}` : val.subject}
-              td(style='text-align:center')= val.count
+              td(style='text-align:center')= val.post_count
