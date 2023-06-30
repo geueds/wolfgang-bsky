@@ -8,6 +8,7 @@ import rateLimit from 'express-rate-limit'
 
 import path from 'path'
 import indexRoute from './routes/index'
+import blocksRoute from './routes/blocks'
 import interactionsRoute from './routes/interactions'
 import followsRoute from './routes/follows'
 
@@ -91,6 +92,7 @@ export class Wolfgang {
     app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')))
     app.use(i18n.init)
     app.use(indexRoute(ctx))
+    // app.use(blocksRoute(ctx))
     app.use(interactionsRoute(ctx))
     app.use(followsRoute(ctx))
 
