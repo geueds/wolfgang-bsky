@@ -89,7 +89,7 @@ const scheduledTasks = async (ctx: AppContext) => {
     )
   })
 
-  cron.schedule('0 * * * *', async () => {
+  cron.schedule('0 15 * * *', async () => {
     const timeStart = Date.now()
     await dData.updateTopBlocked(ctx)
     ctx.log(
@@ -97,7 +97,7 @@ const scheduledTasks = async (ctx: AppContext) => {
     )
   })
 
-  cron.schedule('30 * * * *', async () => {
+  cron.schedule('30 0 * * *', async () => {
     const timeStart = Date.now()
     await dData.updateTopFollowed(ctx)
     ctx.log(
@@ -105,7 +105,7 @@ const scheduledTasks = async (ctx: AppContext) => {
     )
   })
 
-  cron.schedule('*/5 * * * * ', async () => {
+  cron.schedule('*/10 * * * * ', async () => {
     const timeStartA = Date.now()
     ctx.followers = await dData.updateLickablePeople(ctx)
     ctx.log(
