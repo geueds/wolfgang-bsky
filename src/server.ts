@@ -70,9 +70,6 @@ export class Wolfgang {
     if (!cfg.devel) {
       app.set('trust proxy', true)
       app.get('/ip', (request, response) => response.send(request.ip))
-
-      ctx.followers = await dData.updateLickablePeople(ctx)
-      await dData.updateLickablePosts(ctx)
       scheduledTasks(ctx)
     }
 
