@@ -2,11 +2,7 @@ import express from 'express'
 import { AppContext } from '../config'
 import { sql } from 'kysely'
 import { getProfile } from './index'
-
-const maybeStr = (val?: string | any) => {
-  if (!val) return undefined
-  return val
-}
+import { maybeStr } from '../index'
 
 type Follows = {
   uri: string
