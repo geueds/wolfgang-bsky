@@ -48,6 +48,8 @@ export async function updateLickablePosts(ctx: AppContext) {
       (post) => (post.points as number) >= 12 && (post.points as number) <= 20,
     )
 
+  if (!(availablePosts.length > 0)) return
+
   const dbOverlap = await ctx.db
     .selectFrom('licks')
     .select('uri')
