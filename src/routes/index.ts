@@ -653,47 +653,39 @@ export default function (ctx: AppContext) {
     return res.render('interactions')
   })
 
-  // router.get('/blocks', blocksLimit, async (req, res) => {
-  //   return res.render('blocks')
-  // const handle = maybeStr(req.query.handle)?.replace(/^@/g, '').trim()
+  router.get('/blocks', async (req, res) => {
+    return res.render('blocks')
+  })
 
-  // let userFound = false
-  // let textVal = ''
-  // let blocks = {}
+  router.post('/blocks', blocksLimit, async (req, res) => {
+    const timeStart = Date.now()
+    const intType = maybeStr(req.body.submit) ?? undefined
+    const handle = maybeStr(req.body.handle)?.replace(/^@/g, '').trim() ?? ''
 
-  // if (handle && handle.length > 0) {
-  //   const user = await ctx.db
-  //   .selectFrom('profiles')
-  //   .select(['did', 'handle'])
-  //   .where('handle', '=', handle)
-  //   .where(({or, cmpr}) => or([
-  //     cmpr('did', '=', handle),
-  //     cmpr('handle', '=', handle),
-  //     cmpr('handle', '=', `${handle}.bsky.social`),
-  //   ]))
-  //   .limit(1)
-  //   .executeTakeFirst()
+    if (!intType || handle.length === 0) {
+      return res.render('blocks')
+    }
 
-  //   if (!!user) {
-  //     ctx.log(`Searching blocks of ${user.did}: @${user.handle}`)
-  //     userFound = true
-  //     textVal = ''
+    const db_profile = await getProfile(ctx, handle)
+    if (!db_profile) {
+        return res.render('blocks', { handle: handle, errorText: `User not found: @${handle}`})
+    }
 
-  //     blocks = await ctx.db
-  //     .selectFrom('blocks')
-  //     .innerJoin('profiles', 'profiles.did', 'blocks.author')
-  //     .select(['did', 'handle', 'displayName', 'blocks.indexedAt'])
-  //     .where('subject', '=', user.did)
-  //     .orderBy('indexedAt', 'desc')
-  //     .execute()
-  //   } else {
-  //     userFound = false
-  //     textVal = `User not found: "${handle}"`
-  //   }
-  // }
+    const query = await ctx.db
+      .selectFrom('blocks')
+      .innerJoin('profiles', 'profiles.did', 'blocks.author')
+      .select(['did', 'handle', 'displayName', 'avatar', 'blocks.indexedAt'])
+      .where('subject', '=', db_profile.did)
+      .orderBy('indexedAt', 'desc')
+      .execute()
 
-  // return res.render('blocks', { handle: handle, userFound: userFound, textVal: textVal, blocks: blocks });
-  // })
+    ctx.log(`[blocks] Searched blocks of @${db_profile.handle} [${db_profile.did}] [${(Date.now() - timeStart) / 1000}s]`)
+    return res.render('blocks', {
+      handle: handle,
+      profile: db_profile,
+      query: query,
+    })
+  })
 
   router.get('/update/:name/:value?', async (req, res) => {
     ctx.log(

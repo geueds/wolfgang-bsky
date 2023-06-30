@@ -34,5 +34,9 @@
   "FOLLOWS_TABLE_TEXT": "Os dados da última coluna estão incompletos, se estiver vazio não quer necessariamente dizer que a pessoa não te segue",
   "FOLLOWS_LAST_UPDATE": "atividade recente",
   "FOLLOWS_INDEXED_FOLLOW": "segui em",
-  "FOLLOWS_INDEXED_FOLLOWING": "seguiu em"
+  "FOLLOWS_INDEXED_FOLLOWING": "seguiu em",
+
+  "BLOCKS": "Bloqueados",
+  "BLOCKS_TABLE_TOP_TEXT": "Quem bloqueia @{{handle}}?",
+  "BLOCKS_INDEXED": "data"
 }
