@@ -81,7 +81,7 @@ export const clearDb = async (ctx: AppContext) => {
 }
 
 const scheduledTasks = async (ctx: AppContext) => {
-  cron.schedule('*/2 * * * *', async () => {
+  cron.schedule('0 0 * * *', async () => {
     const timeStart = Date.now()
     await clearDb(ctx)
     ctx.log(
