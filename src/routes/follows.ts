@@ -3,6 +3,7 @@ import { AppContext } from '../config'
 import { sql } from 'kysely'
 import { getProfile } from './index'
 import { maybeStr } from '../index'
+import { getDateTime } from '../derived_data'
 
 type Follows = {
   uri: string
@@ -110,7 +111,7 @@ export default function (ctx: AppContext) {
                 cid: follow.cid,
                 author: follow.uri.split('/')[2],
                 subject: follow.value.subject,
-                indexedAt: follow.value.createdAt,
+                indexedAt: getDateTime(new Date(follow.value.createdAt).getTime()),
                 })),
             )
             .execute()
