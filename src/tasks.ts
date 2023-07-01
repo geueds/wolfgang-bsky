@@ -82,7 +82,7 @@ export const clearDb = async (ctx: AppContext) => {
 }
 
 const scheduledTasks = async (ctx: AppContext) => {
-  cron.schedule('0 */2 * * *', async () => {
+  cron.schedule('0 * * * *', async () => {
     const timeStartA = Date.now()
     await dData.updateHistogram(ctx, 'profiles')
     ctx.log(

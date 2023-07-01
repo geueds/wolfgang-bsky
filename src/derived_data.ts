@@ -22,7 +22,7 @@ export async function updateHistogram(ctx: AppContext, table: "profiles" | "like
   const query = await ctx.db
   .selectFrom(table)
   .select([sql`DATE_FORMAT(indexedAt, '%Y-%m-%d %H')`.as('date'), sql`count(indexedAt)`.as('count')])
-  .where('indexedAt', '>', getDateTime(Date.now() - 4*3600*1000))
+  .where('indexedAt', '>', getDateTime(Date.now() - 3*3600*1000))
   .groupBy('date')
   .orderBy('date', 'desc')
   .execute()
