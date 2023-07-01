@@ -5,6 +5,7 @@ block append head
 
 block content
   div(class='container text-center mt-3')
+    h5 Data in this database (the past is incomplete)
     div(id='profiles')
     div(id='posts')
     div(id='likes')
@@ -12,26 +13,114 @@ block content
       var profiles_data = !{JSON.stringify(profiles.data)}
       var posts_data = !{JSON.stringify(posts.data)}
       var likes_data = !{JSON.stringify(likes.data)}
+      const cumulativeSum = (sum => value => sum += value)(0);
       var profiles = {
+        name: 'new',
         x: profiles_data.map(x => x.date),
         y: profiles_data.map(x => x.count),
         type: 'bar',
         orientation: 'v',
       };
+      var profiles_curve = {
+        name: 'total',
+        x: profiles_data.map(x => x.date).reverse(),
+        y: profiles_data.map(x => x.count).reverse().map(cumulativeSum),
+        type: 'scatter',
+        yaxis: 'y2',
+      }
       var posts = {
+        name: 'new',
         x: posts_data.map(x => x.date),
         y: posts_data.map(x => x.count),
         type: 'bar',
         orientation: 'v',
       };
+      var posts_curve = {
+        name: 'total',
+        x: posts_data.map(x => x.date).reverse(),
+        y: posts_data.map(x => x.count).reverse().map(cumulativeSum),
+        type: 'scatter',
+        yaxis: 'y2',
+      }
       var likes = {
+        name: 'new',
         x: likes_data.map(x => x.date),
         y: likes_data.map(x => x.count),
         type: 'bar',
         orientation: 'v',
       };
+      var likes_curve = {
+        name: 'total',
+        x: likes_data.map(x => x.date).reverse(),
+        y: likes_data.map(x => x.count).reverse().map(cumulativeSum),
+        type: 'scatter',
+        yaxis: 'y2',
+      }
       var max_date = profiles_data.map(x => x.date)[0]
       var min_date = profiles_data.map(x => x.date)[48]
-      Plotly.newPlot('profiles', [profiles], { title: '# of new profiles', autorange: false, xaxis: {type: 'date', range: [min_date, max_date]} });
-      Plotly.newPlot('posts', [posts], { title: '# of new posts', autorange: false, xaxis: {type: 'date', range: [min_date, max_date]}  });
-      Plotly.newPlot('likes', [likes], { title: '# of likes', autorange: false, xaxis: {type: 'date', range: [min_date, max_date]}  });
+      Plotly.newPlot(
+        'profiles', 
+        [profiles, profiles_curve], 
+        { 
+          title: 'new profiles', 
+          autorange: false, 
+          xaxis: {
+            type: 'date', 
+            range: [min_date, max_date],
+            side: 'left',
+          },
+          yaxis: {
+            showgrid: false,
+          },
+          yaxis2: {
+            showgrid: false,
+            overlaying: 'y',
+            side: 'right',
+            zeroline: false,
+          }
+        }
+      );
+      Plotly.newPlot(
+        'posts', 
+        [posts, posts_curve], 
+        { 
+          title: 'posts', 
+          autorange: false, 
+          xaxis: {
+            type: 'date', 
+            range: [min_date, max_date],
+            side: 'left',
+          },
+          yaxis: {
+            showgrid: false,
+          },
+          yaxis2: {
+            showgrid: false,
+            overlaying: 'y',
+            side: 'right',
+            zeroline: false,
+          }
+        }
+      );
+      Plotly.newPlot(
+        'likes', 
+        [likes, likes_curve], 
+        { 
+          title: 'new likes', 
+          autorange: false, 
+          xaxis: {
+            type: 'date', 
+            range: [min_date, max_date],
+            side: 'left',
+          },
+          yaxis: {
+            showgrid: false,
+          },
+          yaxis2: {
+            showgrid: false,
+            overlaying: 'y',
+            side: 'right',
+            zeroline: false,
+          }
+        }
+      );
