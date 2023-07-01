@@ -11,6 +11,7 @@ import {
 } from '@atproto/api'
 import { getProfile } from './index'
 import { maybeStr } from '../index'
+import { getDateTime } from '../derived_data'
 
 function hex_is_light(color: string) {
   const hex = color.replace('#', '')
@@ -170,7 +171,7 @@ const getCircles = async (
                 displayName: profile.data.displayName,
                 avatar: profile.data.avatar ?? null,
                 description: profile.data.description ?? null,
-                updatedAt: new Date().toISOString(),
+                updatedAt: getDateTime(),
               })
               .where('did', '=', profile.data.did)
               .execute()
@@ -220,7 +221,7 @@ const getInteractionsData = async (
     !!lastCircles.interactions &&
     lastCircles.interactions.length > 0 &&
     !!lastCircles.updatedAt &&
-    lastCircles.updatedAt > new Date(Date.now() - 2 * 3600 * 1000).toISOString()
+    lastCircles.updatedAt > getDateTime(Date.now() - 2 * 3600 * 1000)
   ) {
     ctx.log(
       `[interactions] Found current interactions of ${profile.did}: @${profile.handle}`,
@@ -412,11 +413,11 @@ const getInteractionsData = async (
       .values({
         did: profile.did,
         interactions: JSON.stringify(queryTable),
-        updatedAt: new Date().toISOString(),
+        updatedAt: getDateTime(),
       })
       .execute()
 
-    return { interactions: queryTable, updatedAt: new Date().toISOString() }
+    return { interactions: queryTable, updatedAt: getDateTime() }
   }
   return undefined
 }
@@ -523,9 +524,7 @@ export default function (ctx: AppContext) {
     if (!intType || handle.length === 0) {
       return res.render('interactions')
     }
-    const timeCutoff = new Date(Date.now() - 7 * 24 * 3600 * 1000)
-      .toISOString()
-      .slice(0, 10)
+    const timeCutoff = getDateTime(Date.now() - 7 * 24 * 3600 * 1000)
 
     const profile = await getProfile(ctx, handle)
     if (!profile) {

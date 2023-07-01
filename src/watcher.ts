@@ -13,6 +13,7 @@ import {
   AppBskyEmbedRecord,
   RichText,
 } from '@atproto/api'
+import { getDateTime } from './derived_data'
 
 class FirehoseSubscription extends FirehoseSubscriptionBase {
   async getPost(text: string) {
@@ -22,7 +23,7 @@ class FirehoseSubscription extends FirehoseSubscriptionBase {
       $type: 'app.bsky.feed.post',
       text: rt.text,
       facets: rt.facets,
-      createdAt: new Date().toISOString()
+      createdAt: getDateTime()
     }
   }
   
@@ -70,7 +71,7 @@ class FirehoseSubscription extends FirehoseSubscriptionBase {
         embed: create.record.embed,
         replyParent: create.record?.reply?.parent.uri ?? null,
         replyRoot: create.record?.reply?.root.uri ?? null,
-        indexedAt: new Date().toISOString(),
+        indexedAt: getDateTime(),
       }
     })
     const followsToCreate = ops.follows.creates.map((create) => {
@@ -79,7 +80,7 @@ class FirehoseSubscription extends FirehoseSubscriptionBase {
         cid: create.cid,
         author: create.author,
         subject: create.record.subject,
-        indexedAt: new Date().toISOString(),
+        indexedAt: getDateTime(),
       }
     })
     const likesToCreate = ops.likes.creates.map((create) => {
@@ -88,7 +89,7 @@ class FirehoseSubscription extends FirehoseSubscriptionBase {
         cid: create.cid,
         subjectUri: create.record.subject.uri,
         subjectCid: create.record.subject.cid,
-        indexedAt: new Date().toISOString(),
+        indexedAt: getDateTime(),
       }
     })
 

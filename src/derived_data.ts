@@ -1,6 +1,11 @@
 import { AppContext } from './config'
 import { sql } from 'kysely'
 
+export const getDateTime = (date?: number) => {
+  if (!date) return new Date().toISOString().slice(0, 19).replace('T', ' ');
+  return new Date(date).toISOString().slice(0, 19).replace('T', ' ');
+}
+
 export async function updateLickablePosts(ctx: AppContext) {
   const posts = await ctx.db
     .selectFrom('posts')
@@ -22,12 +27,12 @@ export async function updateLickablePosts(ctx: AppContext) {
     .where(
       'posts.indexedAt',
       '<',
-      new Date(Date.now() - 1 * 30 * 60 * 1000).toISOString(),
+      getDateTime(Date.now() - 1 * 30 * 60 * 1000),
     )
     .where(
       'posts.indexedAt',
       '>',
-      new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+      getDateTime(Date.now() - 2 * 60 * 60 * 1000),
     )
     .where('replyRoot', 'is', null)
     .where('posts.languages', 'is not', null)
@@ -71,7 +76,7 @@ export async function updateLickablePosts(ctx: AppContext) {
         toRepost.map((x) => ({
           uri: x.uri,
           author: x.author,
-          indexedAt: new Date().toISOString(),
+          indexedAt: getDateTime(),
         })),
       )
       .execute()
@@ -154,9 +159,7 @@ export async function updateTopFollowed(ctx: AppContext) {
     .where(
       'follows.indexedAt',
       '>',
-      new Date(Date.now() - 1 * 48 * 3600 * 1000)
-        .toISOString()
-        .substring(0, 10),
+      getDateTime(Date.now() - 1 * 48 * 3600 * 1000),
     )
     .orderBy('count', 'desc')
     .limit(100)
@@ -167,7 +170,7 @@ export async function updateTopFollowed(ctx: AppContext) {
     .values({
       name: 'top_follows',
       data: JSON.stringify(data),
-      updatedAt: new Date().toISOString(),
+      updatedAt: getDateTime(),
     })
     .executeTakeFirst()
 }
@@ -189,9 +192,7 @@ export async function updateTopBlocked(ctx: AppContext) {
     .where(
       'blocks.indexedAt',
       '>',
-      new Date(Date.now() - 1 * 48 * 3600 * 1000)
-        .toISOString()
-        .substring(0, 10),
+      getDateTime(Date.now() - 1 * 48 * 3600 * 1000),
     )
     .orderBy('count', 'desc')
     .limit(25)
@@ -202,7 +203,7 @@ export async function updateTopBlocked(ctx: AppContext) {
     .values({
       name: 'top_blocks',
       data: JSON.stringify(data),
-      updatedAt: new Date().toISOString(),
+      updatedAt: getDateTime(),
     })
     .executeTakeFirst()
 }
@@ -224,9 +225,7 @@ export async function updateTopPosters(ctx: AppContext) {
     .where(
       'posts.indexedAt',
       '>',
-      new Date(Date.now() - 1 * 48 * 3600 * 1000)
-        .toISOString()
-        .substring(0, 10),
+      getDateTime(Date.now() - 1 * 48 * 3600 * 1000),
     )
     .groupBy('author')
     .orderBy('post_count', 'desc')
@@ -238,7 +237,7 @@ export async function updateTopPosters(ctx: AppContext) {
     .values({
       name: 'top_posters',
       data: JSON.stringify(data),
-      updatedAt: new Date().toISOString(),
+      updatedAt: getDateTime(),
     })
     .execute()
 }
@@ -253,7 +252,7 @@ export async function updateProfile(ctx: AppContext, actor: string) {
         displayName: profile.data.displayName,
         avatar: profile.data.avatar ?? null,
         description: profile.data.description ?? null,
-        updatedAt: new Date().toISOString(),
+        updatedAt: getDateTime(),
       })
       .where('did', '=', profile.data.did)
       .execute()

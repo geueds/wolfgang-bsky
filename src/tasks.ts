@@ -1,12 +1,13 @@
 var cron = require('node-cron')
 import { AppContext } from './config'
 import * as dData from './derived_data'
+import { getDateTime } from './derived_data'
 
 export const clearDb = async (ctx: AppContext) => {
   const query = await ctx.db
   .selectFrom('profiles')
   .select('did')
-  .where('updatedAt', '<', new Date(Date.now() - 3 * 7 * 24 * 3600 * 1000).toISOString())
+  .where('updatedAt', '<', getDateTime(Date.now() - 3 * 7 * 24 * 3600 * 1000))
   .orderBy('updatedAt', 'asc')
   .limit(300)
   .execute()
@@ -24,8 +25,8 @@ export const clearDb = async (ctx: AppContext) => {
           displayName: res.data.displayName,
           avatar: res.data.avatar ?? null,
           description: res.data.description,
-          indexedAt: res.data.indexedAt ?? new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
+          indexedAt: res.data.indexedAt ? getDateTime(new Date(res.data.indexedAt).getTime()) : getDateTime(),
+          updatedAt: getDateTime(),
         })
         .where('did', '=', did)
         .execute()
