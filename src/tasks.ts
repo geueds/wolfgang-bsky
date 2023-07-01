@@ -82,6 +82,24 @@ export const clearDb = async (ctx: AppContext) => {
 }
 
 const scheduledTasks = async (ctx: AppContext) => {
+  cron.schedule('0 */2 * * *', async () => {
+    const timeStartA = Date.now()
+    await dData.updateHistogram(ctx, 'profiles')
+    ctx.log(
+      `[stats] Profiles done in ${(Date.now() - timeStartA) / 1000}s`,
+    )
+    const timeStartB = Date.now()
+    await dData.updateHistogram(ctx, 'likes')
+    ctx.log(
+      `[stats] Likes done in ${(Date.now() - timeStartB) / 1000}s`,
+    )
+    const timeStartC = Date.now()
+    await dData.updateHistogram(ctx, 'posts')
+    ctx.log(
+      `[stats] Posts done in ${(Date.now() - timeStartC) / 1000}s`,
+    )
+  })
+
   cron.schedule('0 0 * * *', async () => {
     const timeStart = Date.now()
     await clearDb(ctx)

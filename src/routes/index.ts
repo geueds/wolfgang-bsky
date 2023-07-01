@@ -23,9 +23,9 @@ export const getProfile = async (ctx: AppContext, handle: string) => {
 export default function (ctx: AppContext) {
   const router = express.Router()
 
-  router.get('/', async (req, res) => {
-    return res.render('index')
-  })
+  // router.get('/', async (req, res) => {
+  //   return res.render('index')
+  // })
 
   router.get('/update/:name/:value?', async (req, res) => {
     ctx.log(

@@ -6,6 +6,44 @@ export const getDateTime = (date?: number) => {
   return new Date(date).toISOString().slice(0, 19).replace('T', ' ');
 }
 
+export const getStoredHistogram = async (ctx: AppContext, table: "profiles" | "likes" | "posts") => {
+  return await ctx.db
+      .selectFrom('derived_data')
+      .select(['data', 'updatedAt'])
+      .where('name', '=', `histogram_${table}`)
+      .executeTakeFirst()
+}
+
+export async function updateHistogram(ctx: AppContext, table: "profiles" | "likes" | "posts") {
+  const current = await getStoredHistogram(ctx, table)
+  if (!current) return
+  const data = current.data as {date: string, count: number}[]
+
+  const query = await ctx.db
+  .selectFrom(table)
+  .select([sql`DATE_FORMAT(indexedAt, '%Y-%m-%d %H')`.as('date'), sql`count(indexedAt)`.as('count')])
+  .where('indexedAt', '>', getDateTime(Date.now() - 4*3600*1000))
+  .groupBy('date')
+  .orderBy('date', 'desc')
+  .execute()
+  const new_data = query as {date: string, count: number}[]
+
+  new_data.forEach(row => {
+    var idx = data.findIndex(x => x.date === row.date)
+    if (idx > -1) data[idx] = row
+    else data.unshift(row)
+  })
+
+  await ctx.db
+    .replaceInto('derived_data')
+    .values({
+      name: `histogram_${table}`,
+      data: JSON.stringify(data),
+      updatedAt: getDateTime(),
+    })
+    .executeTakeFirst()
+}
+
 export async function updateLickablePosts(ctx: AppContext) {
   const posts = await ctx.db
     .selectFrom('posts')

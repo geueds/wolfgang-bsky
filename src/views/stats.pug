@@ -1,0 +1,37 @@
+extends layout.pug
+
+block append head
+  script(src="https://cdn.plot.ly/plotly-2.24.1.min.js" charset="utf-8")
+
+block content
+  div(class='container text-center mt-3')
+    div(id='profiles')
+    div(id='posts')
+    div(id='likes')
+    script. 
+      var profiles_data = !{JSON.stringify(profiles.data)}
+      var posts_data = !{JSON.stringify(posts.data)}
+      var likes_data = !{JSON.stringify(likes.data)}
+      var profiles = {
+        x: profiles_data.map(x => x.date),
+        y: profiles_data.map(x => x.count),
+        type: 'bar',
+        orientation: 'v',
+      };
+      var posts = {
+        x: posts_data.map(x => x.date),
+        y: posts_data.map(x => x.count),
+        type: 'bar',
+        orientation: 'v',
+      };
+      var likes = {
+        x: likes_data.map(x => x.date),
+        y: likes_data.map(x => x.count),
+        type: 'bar',
+        orientation: 'v',
+      };
+      var max_date = profiles_data.map(x => x.date)[0]
+      var min_date = profiles_data.map(x => x.date)[48]
+      Plotly.newPlot('profiles', [profiles], { title: '# of new profiles', autorange: false, xaxis: {type: 'date', range: [min_date, max_date]} });
+      Plotly.newPlot('posts', [posts], { title: '# of new posts', autorange: false, xaxis: {type: 'date', range: [min_date, max_date]}  });
+      Plotly.newPlot('likes', [likes], { title: '# of likes', autorange: false, xaxis: {type: 'date', range: [min_date, max_date]}  });

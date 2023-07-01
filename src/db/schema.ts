@@ -14,7 +14,7 @@ export type DatabaseSchema = {
 
 export type DerivedData = {
   name: string
-  data: string
+  data: unknown
   updatedAt: string
 }
 
