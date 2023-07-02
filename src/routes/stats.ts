@@ -2,6 +2,8 @@ import express from 'express'
 import { AppContext } from '../config'
 import { getStoredHistogram } from '../derived_data'
 
+export type StatsTable = "profiles" | "likes" | "posts" | "follows" | "blocks"
+
 export default function (ctx: AppContext) {
   const router = express.Router()
 
