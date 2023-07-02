@@ -6,7 +6,7 @@ export const getDateTime = (date?: number) => {
   return new Date(date).toISOString().slice(0, 19).replace('T', ' ');
 }
 
-export const getStoredHistogram = async (ctx: AppContext, table: "profiles" | "likes" | "posts" | "follows") => {
+export const getStoredHistogram = async (ctx: AppContext, table: "profiles" | "likes" | "posts" | "follows" | "blocks") => {
   return await ctx.db
       .selectFrom('derived_data')
       .select(['data', 'updatedAt'])
@@ -14,7 +14,7 @@ export const getStoredHistogram = async (ctx: AppContext, table: "profiles" | "l
       .executeTakeFirst()
 }
 
-export async function updateHistogram(ctx: AppContext, table: "profiles" | "likes" | "posts" | "follows") {
+export async function updateHistogram(ctx: AppContext, table: "profiles" | "likes" | "posts" | "follows" | "blocks") {
   const current = await getStoredHistogram(ctx, table)
   if (!current) return
   const data = current.data as {date: string, count: number}[]

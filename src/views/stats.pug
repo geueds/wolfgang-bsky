@@ -10,11 +10,13 @@ block content
     div(id='posts')
     div(id='likes')
     div(id='follows')
+    div(id='blocks')
     script. 
       var profiles_data = !{JSON.stringify(profiles.data)}
       var posts_data = !{JSON.stringify(posts.data)}
       var likes_data = !{JSON.stringify(likes.data)}
       var follows_data = !{JSON.stringify(follows.data)}
+      var blocks_data = !{JSON.stringify(blocks.data)}
       const profiles_cumsum = (sum => value => sum += value)(0);
       var profiles = {
         name: 'new',
@@ -76,6 +78,22 @@ block content
         name: 'total',
         x: follows_data.map(x => x.date).reverse(),
         y: follows_data.map(x => x.count).reverse().map(follows_cumsum),
+        type: 'scatter',
+        yaxis: 'y2',
+      }
+      const blocks_cumsum = (sum => value => sum += value)(0);
+      var blocks = {
+        name: 'new',
+        x: blocks_data.map(x => x.date),
+        y: blocks_data.map(x => x.count),
+        type: 'bar',
+        orientation: 'v',
+        offset: -3600000,
+      };
+      var blocks_curve = {
+        name: 'total',
+        x: blocks_data.map(x => x.date).reverse(),
+        y: blocks_data.map(x => x.count).reverse().map(blocks_cumsum),
         type: 'scatter',
         yaxis: 'y2',
       }
@@ -152,6 +170,28 @@ block content
         [follows, follows_curve], 
         { 
           title: 'follows', 
+          autorange: false, 
+          xaxis: {
+            type: 'date', 
+            range: [min_date, max_date],
+            side: 'left',
+          },
+          yaxis: {
+            showgrid: false,
+          },
+          yaxis2: {
+            showgrid: false,
+            overlaying: 'y',
+            side: 'right',
+            zeroline: false,
+          }
+        }
+      );
+      Plotly.newPlot(
+        'blocks', 
+        [blocks, blocks_curve], 
+        { 
+          title: 'blocks', 
           autorange: false, 
           xaxis: {
             type: 'date', 
