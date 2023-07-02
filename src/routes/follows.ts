@@ -100,7 +100,7 @@ export default function (ctx: AppContext) {
     const query_count = db_follows_query.count as number
     const profile_count = profile.data.followsCount as number
 
-    if ((profile_count - query_count) > 10) {
+    if ((profile_count - query_count) > 2) {
         ctx.log(`[follows] Updating follows of @${handle}`)
         const follows = await getAllFollows(ctx, profile.data.did)
         await ctx.db
