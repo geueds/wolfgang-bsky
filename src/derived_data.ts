@@ -1,44 +1,48 @@
 import { AppContext } from './config'
 import { sql } from 'kysely'
+import { StatsTable } from './routes/stats';
 
 export const getDateTime = (date?: number) => {
   if (!date) return new Date().toISOString().slice(0, 19).replace('T', ' ');
   return new Date(date).toISOString().slice(0, 19).replace('T', ' ');
 }
 
-export const getStoredHistogram = async (ctx: AppContext, table: "profiles" | "likes" | "posts" | "follows" | "blocks") => {
+export const getStoredHistogram = async (ctx: AppContext, table: StatsTable) => {
   return await ctx.db
       .selectFrom('derived_data')
       .select(['data', 'updatedAt'])
       .where('name', '=', `histogram_${table}`)
-      .executeTakeFirst()
+      .executeTakeFirst() ?? {data: []}
 }
 
-export async function updateHistogram(ctx: AppContext, table: "profiles" | "likes" | "posts" | "follows" | "blocks") {
-  const current = await getStoredHistogram(ctx, table)
-  if (!current) return
-  const data = current.data as {date: string, count: number}[]
-
-  const query = await ctx.db
+export async function updateHistogram(ctx: AppContext, table: StatsTable, full? : boolean) {
+  let qb = ctx.db
   .selectFrom(table)
   .select([sql`DATE_FORMAT(indexedAt, '%Y-%m-%d %H')`.as('date'), sql`count(indexedAt)`.as('count')])
-  .where('indexedAt', '>', sql`DATE_FORMAT(${getDateTime(Date.now() - 4*3600*1000)}, '%Y-%m-%d %H')`)
   .groupBy('date')
   .orderBy('date', 'desc')
-  .execute()
+  if (!full) {
+    qb = qb.where('indexedAt', '>', sql`DATE_FORMAT(${getDateTime(Date.now() - 4*3600*1000)}, '%Y-%m-%d %H')`)
+  }
+  const query = await qb.execute()
   const new_data = query as {date: string, count: number}[]
 
-  new_data.forEach(row => {
-    var idx = data.findIndex(x => x.date === row.date)
-    if (idx > -1) data[idx] = row
-    else data.unshift(row)
-  })
+  let data : {date: string, count: number}[] = []
+  if (!full) {
+    const current = await getStoredHistogram(ctx, table)
+    data = current.data as {date: string, count: number}[]
+    new_data.forEach(row => {
+      var idx = data.findIndex(x => x.date === row.date)
+      if (idx > -1) data[idx] = row
+      else data.unshift(row)
+    })
+  }
 
   await ctx.db
     .replaceInto('derived_data')
     .values({
       name: `histogram_${table}`,
-      data: JSON.stringify(data),
+      data: JSON.stringify(full ? query : data),
       updatedAt: getDateTime(),
     })
     .executeTakeFirst()

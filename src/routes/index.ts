@@ -4,6 +4,7 @@ import { sql } from 'kysely'
 import rateLimit from 'express-rate-limit'
 import * as dData from '../derived_data'
 import { maybeStr } from '../index'
+import { StatsTable } from './stats'
 
 export const getProfile = async (ctx: AppContext, handle: string) => {
   return await ctx.db
@@ -33,6 +34,13 @@ export default function (ctx: AppContext) {
     )
     if (!['127.0.0.1', '::1'].includes(req.ip)) {
       res.end()
+    }
+
+    if (req.params.name === 'stats') {
+      if (!!req.params.value) {
+        await dData.updateHistogram(ctx, req.params.value as StatsTable, true)
+        res.send('done')
+      }
     }
 
     if (req.params.name === 'follows') {
