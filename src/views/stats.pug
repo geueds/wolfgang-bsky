@@ -13,7 +13,7 @@ block content
       var profiles_data = !{JSON.stringify(profiles.data)}
       var posts_data = !{JSON.stringify(posts.data)}
       var likes_data = !{JSON.stringify(likes.data)}
-      const cumulativeSum = (sum => value => sum += value)(0);
+      const profiles_cumsum = (sum => value => sum += value)(0);
       var profiles = {
         name: 'new',
         x: profiles_data.map(x => x.date),
@@ -24,10 +24,11 @@ block content
       var profiles_curve = {
         name: 'total',
         x: profiles_data.map(x => x.date).reverse(),
-        y: profiles_data.map(x => x.count).reverse().map(cumulativeSum),
+        y: profiles_data.map(x => x.count).reverse().map(profiles_cumsum),
         type: 'scatter',
         yaxis: 'y2',
       }
+      const posts_cumsum = (sum => value => sum += value)(0);
       var posts = {
         name: 'new',
         x: posts_data.map(x => x.date),
@@ -38,10 +39,11 @@ block content
       var posts_curve = {
         name: 'total',
         x: posts_data.map(x => x.date).reverse(),
-        y: posts_data.map(x => x.count).reverse().map(cumulativeSum),
+        y: posts_data.map(x => x.count).reverse().map(posts_cumsum),
         type: 'scatter',
         yaxis: 'y2',
       }
+      const likes_cumsum = (sum => value => sum += value)(0);
       var likes = {
         name: 'new',
         x: likes_data.map(x => x.date),
@@ -52,7 +54,7 @@ block content
       var likes_curve = {
         name: 'total',
         x: likes_data.map(x => x.date).reverse(),
-        y: likes_data.map(x => x.count).reverse().map(cumulativeSum),
+        y: likes_data.map(x => x.count).reverse().map(likes_cumsum),
         type: 'scatter',
         yaxis: 'y2',
       }
