@@ -94,7 +94,7 @@ export class Wolfgang {
     app.use(i18n.init)
     app.use(indexRoute(ctx))
     app.use(statsRoute(ctx))
-    // app.use(blocksRoute(ctx))
+    app.use(blocksRoute(ctx))
     app.use(interactionsRoute(ctx))
     app.use(followsRoute(ctx))
 
