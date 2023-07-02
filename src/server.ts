@@ -98,6 +98,10 @@ export class Wolfgang {
     app.use(interactionsRoute(ctx))
     app.use(followsRoute(ctx))
 
+    app.use((req, res, next) => {
+      res.status(404).send("Error 404")
+    })
+
     return new Wolfgang(app, db, cfg, api)
   }
 
