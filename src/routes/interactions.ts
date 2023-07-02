@@ -535,6 +535,7 @@ export default function (ctx: AppContext) {
     }
 
     if (intType === 'Search') {
+      ctx.log(`[interactions] ${req.headers["user-agent"]}`)
       const interactions_data = await getInteractionsData(
         ctx,
         profile,
