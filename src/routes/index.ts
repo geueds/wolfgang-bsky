@@ -53,6 +53,11 @@ export default function (ctx: AppContext) {
       res.send('done!')
     }
 
+    if (req.params.name === 'posts') {
+      await dData.updateTopPosters(ctx)
+      res.send('done!')
+    }
+
     if (req.params.name === 'profile') {
       if (!!req.params.value) {
         const profile = await dData.updateProfile(ctx, req.params.value)
