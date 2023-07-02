@@ -9,7 +9,8 @@ export default function (ctx: AppContext) {
     const profiles = await getStoredHistogram(ctx, 'profiles')
     const posts = await getStoredHistogram(ctx, 'posts')
     const likes = await getStoredHistogram(ctx, 'likes')
-    return res.render('stats', { profiles: profiles, posts: posts, likes: likes })
+    const follows = await getStoredHistogram(ctx, 'follows')
+    return res.render('stats', { profiles: profiles, posts: posts, likes: likes, follows: follows })
   })
 
   return router

@@ -9,10 +9,12 @@ block content
     div(id='profiles')
     div(id='posts')
     div(id='likes')
+    div(id='follows')
     script. 
       var profiles_data = !{JSON.stringify(profiles.data)}
       var posts_data = !{JSON.stringify(posts.data)}
       var likes_data = !{JSON.stringify(likes.data)}
+      var follows_data = !{JSON.stringify(follows.data)}
       const profiles_cumsum = (sum => value => sum += value)(0);
       var profiles = {
         name: 'new',
@@ -61,8 +63,24 @@ block content
         type: 'scatter',
         yaxis: 'y2',
       }
+      const follows_cumsum = (sum => value => sum += value)(0);
+      var follows = {
+        name: 'new',
+        x: follows_data.map(x => x.date),
+        y: follows_data.map(x => x.count),
+        type: 'bar',
+        orientation: 'v',
+        offset: -3600000,
+      };
+      var follows_curve = {
+        name: 'total',
+        x: follows_data.map(x => x.date).reverse(),
+        y: follows_data.map(x => x.count).reverse().map(follows_cumsum),
+        type: 'scatter',
+        yaxis: 'y2',
+      }
       var max_date = profiles_data.map(x => x.date)[0]
-      var min_date = profiles_data.map(x => x.date)[48]
+      var min_date = profiles_data.map(x => x.date)[7*24]
       Plotly.newPlot(
         'profiles', 
         [profiles, profiles_curve], 
@@ -89,7 +107,7 @@ block content
         'posts', 
         [posts, posts_curve], 
         { 
-          title: 'posts', 
+          title: 'new posts', 
           autorange: false, 
           xaxis: {
             type: 'date', 
@@ -111,7 +129,29 @@ block content
         'likes', 
         [likes, likes_curve], 
         { 
-          title: 'new likes', 
+          title: 'likes', 
+          autorange: false, 
+          xaxis: {
+            type: 'date', 
+            range: [min_date, max_date],
+            side: 'left',
+          },
+          yaxis: {
+            showgrid: false,
+          },
+          yaxis2: {
+            showgrid: false,
+            overlaying: 'y',
+            side: 'right',
+            zeroline: false,
+          }
+        }
+      );
+      Plotly.newPlot(
+        'follows', 
+        [follows, follows_curve], 
+        { 
+          title: 'follows', 
           autorange: false, 
           xaxis: {
             type: 'date', 
