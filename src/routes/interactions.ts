@@ -221,7 +221,7 @@ const getInteractionsData = async (
     !!lastCircles.interactions &&
     lastCircles.interactions.length > 0 &&
     !!lastCircles.updatedAt &&
-    lastCircles.updatedAt > getDateTime(Date.now() - 2 * 3600 * 1000)
+    getDateTime(new Date(lastCircles.updatedAt).getTime()) > getDateTime(Date.now() - 2 * 3600 * 1000)
   ) {
     ctx.log(
       `[interactions] Found current interactions of ${profile.did}: @${profile.handle}`,
