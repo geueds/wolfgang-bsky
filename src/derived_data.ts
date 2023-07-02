@@ -237,7 +237,7 @@ export async function updateTopBlocked(ctx: AppContext) {
       getDateTime(Date.now() - 1 * 48 * 3600 * 1000),
     )
     .orderBy('count', 'desc')
-    .limit(25)
+    .limit(50)
     .execute()
 
   await ctx.db
@@ -271,7 +271,7 @@ export async function updateTopPosters(ctx: AppContext) {
     )
     .groupBy('author')
     .orderBy('post_count', 'desc')
-    .limit(300)
+    .limit(500)
     .execute()
 
   await ctx.db
